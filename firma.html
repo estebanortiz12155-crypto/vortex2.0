@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Contrato</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#0b1716">
+<script src="/config.js"></script>
+<script src="/contrato-doc.js"></script>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#eef1f5;color:#1f2937;line-height:1.5}
+  .top{background:#1b3b63;color:#fff;padding:16px 20px;display:flex;align-items:center;gap:12px}
+  .top .lg{width:38px;height:38px;border-radius:8px;background:#fff;color:#1b3b63;display:grid;place-items:center;font-weight:800;font-size:20px}
+  .top b{font-size:18px;letter-spacing:.04em}.top small{display:block;opacity:.75;font-size:12px}
+  .wrap{max-width:820px;margin:0 auto;padding:16px}
+  .card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:14px}
+  .sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+  .sum div{background:#f3f4f6;border-radius:10px;padding:10px 12px}.sum span{display:block;font-size:12px;color:#6b7280}.sum b{font-size:17px}
+  .doc{max-height:55vh;overflow:auto;border:1px solid #e5e7eb;border-radius:10px;padding:16px 18px;font-size:14px;text-align:justify}
+  .doc .ct{text-align:center;color:#1b3b63;margin:0;font-size:18px}.doc .cs{text-align:center;color:#6b7280;font-size:12px;margin:2px 0 14px}
+  .doc .ban{background:#1b3b63;color:#fff;font-weight:700;padding:6px 10px;border-radius:4px;margin:14px 0 8px}
+  .doc h3{color:#1b3b63;font-size:14px;margin:14px 0 6px}.doc ul{padding-left:20px;margin:6px 0}
+  .doc table{width:100%;border-collapse:collapse;margin:8px 0;font-size:13px}.doc .pt td{border:1px solid #e5e7eb;padding:8px}
+  .doc .ft td{padding:4px 8px;text-align:right}.doc .ft td:first-child{width:70%}.doc .ft .tot td{font-weight:800;background:#e4e9f0}
+  label{display:block;font-size:13px;font-weight:600;margin:12px 0 6px}
+  input[type=text]{width:100%;padding:11px 12px;border:1px solid #d1d5db;border-radius:9px;font:inherit;font-size:16px}
+  .pad{border:2px dashed #cbd5e1;border-radius:12px;background:#fafafa;touch-action:none;width:100%;height:190px;display:block}
+  .row{display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:13px;color:#6b7280}
+  .chk{display:flex;gap:10px;align-items:flex-start;font-weight:400;margin-top:14px}.chk input{width:20px;height:20px;margin-top:2px}
+  button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid #d1d5db;background:#fff;padding:8px 12px}
+  .go{width:100%;margin-top:16px;padding:14px;background:#0f766e;color:#fff;border:0;font-size:17px;font-weight:700}
+  .go:disabled{opacity:.5}
+  .ok{text-align:center;padding:30px 20px}.ok .ic{width:64px;height:64px;border-radius:50%;background:#d1fae5;color:#059669;display:grid;place-items:center;font-size:34px;margin:0 auto 12px}
+  .err{color:#b91c1c;font-size:14px;margin-top:10px}
+  .muted{color:#6b7280;font-size:13px}
+
+  body{font-family:Manrope,system-ui,sans-serif;background:#f1f4f3;-webkit-font-smoothing:antialiased}
+  .top{background:#0b1716;background-image:radial-gradient(90% 140% at 0% 0%,rgba(94,234,212,.22),transparent 60%);padding:20px}
+  .top .lg{background:linear-gradient(135deg,#5eead4,#0b7a6e);color:#0b1716;box-shadow:0 0 18px rgba(94,234,212,.4)}
+  .card{border-radius:18px;box-shadow:0 1px 2px rgba(13,23,22,.04),0 10px 30px -18px rgba(13,23,22,.25)}
+  .sum div{background:#f3f7f6}.sum b{letter-spacing:-.02em}
+  .doc .ct,.doc h3{color:#0b4d46}.doc .ban{background:#0b1716}.doc .ft .tot td{background:#e3f4f0}
+  .pad{background:repeating-linear-gradient(0deg,#fcfdfd,#fcfdfd 40px,#f1f5f4 41px);border-color:#a7d8cf}
+  .go{background:linear-gradient(180deg,#0e8a7c,#0b7a6e);border-radius:12px;box-shadow:0 8px 20px -8px rgba(11,122,110,.7)}
+  .go:not(:disabled):active{transform:translateY(1px)}
+  .ok .ic{background:linear-gradient(135deg,#d1fae5,#a7f3d0);animation:pop .4s cubic-bezier(.2,1.4,.4,1)}
+  @keyframes pop{from{transform:scale(.4);opacity:0}}
+  input[type=text]:focus{outline:none;border-color:#0b7a6e;box-shadow:0 0 0 3px rgba(11,122,110,.15)}
+</style>
+</head>
+<body>
+<div class="top"><div class="lg" id="lg">V</div><div><b id="emp">VORTEX</b><small id="sub">Contrato</small></div></div>
+<div class="wrap" id="app"><div class="card muted">Cargando…</div></div>
+<script>
+(async () => {
+  const app = document.getElementById('app');
+  const token = location.pathname.split('/').filter(Boolean)[1] || new URLSearchParams(location.search).get('t') || '';
+  const rpc = async (fn, body) => {
+    const r = await fetch(QR_CONFIG.url + '/rest/v1/rpc/' + fn, { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: QR_CONFIG.key }, body: JSON.stringify(body) });
+    const d = await r.json(); if (!r.ok) throw new Error(d.message || 'Error'); return d;
+  };
+  let c;
+  try { c = await rpc('contrato_publico', { p_token: token }); } catch { app.innerHTML = '<div class="card ok"><h2>Contrato no encontrado</h2><p class="muted">Revisa el link que te mandaron.</p></div>'; return; }
+  const en = c.idioma === 'en';
+  const t = (es, eng) => (en ? eng : es);
+  document.documentElement.lang = en ? 'en' : 'es';
+  const emp = c.empresa || 'Vortex', CD = ContratoDoc, T = CD.TIPOS[c.tipo] || CD.TIPOS.dental;
+  document.getElementById('emp').textContent = emp.toUpperCase(); document.getElementById('lg').textContent = emp[0].toUpperCase();
+  document.getElementById('sub').textContent = `${t('Contrato', 'Contract')} ${CD.folioTxt(c.folio)}`;
+  document.title = `${t('Contrato', 'Contract')} ${CD.folioTxt(c.folio)} · ${emp}`;
+  const money = (n) => (Number(n) || 0).toLocaleString(c.moneda === 'USD' ? 'en-US' : 'es-MX', { style: 'currency', currency: c.moneda || 'MXN' });
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (x) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[x]));
+  const cfg = { empresa: emp, firma: c.firma_empresa, ciudad: c.ciudad_empresa, telefono: c.telefono, correo: c.correo, moneda: c.moneda };
+  const firmadoHTML = (cuando, quien) => `<div class="card ok"><div class="ic">✓</div><h2>${t('Contrato firmado', 'Contract signed')}</h2>
+    <p class="muted">${t('Firmado por', 'Signed by')} <b>${esc(quien)}</b> ${t('el', 'on')} ${new Date(cuando).toLocaleString(en ? 'en-US' : 'es-MX')}.</p>
+    <p class="muted">${t(`${esc(emp)} ya recibió tu firma. Te mandará tu copia del contrato.`, `${esc(emp)} has received your signature and will send you a copy.`)}</p></div>`;
+  if (c.firmado_at || c.estado === 'firmado') { app.innerHTML = firmadoHTML(c.firmado_at || c.fecha, c.firma_nombre || c.cliente); return; }
+
+  app.innerHTML = `
+    <div class="card"><h2 style="margin:0 0 4px">${t('Hola', 'Hi')} ${esc(c.cliente)}</h2>
+      <p class="muted" style="margin:0 0 14px">${t(`Este es tu contrato de ${esc(T.nombre.toLowerCase())} con ${esc(emp)}. Léelo y, si estás de acuerdo, fírmalo aquí abajo con el dedo.`, `This is your ${esc(T.nombre.toLowerCase())} contract with ${esc(emp)}. Please read it and, if you agree, sign below with your finger. The contract text is in Spanish.`)}</p>
+      <div class="sum"><div><span>${t('Total con IVA', 'Total (tax incl.)')}</span><b>${money(c.total)}</b></div>
+        ${Number(c.anticipo) ? `<div><span>${t('Anticipo a la firma', 'Down payment')}</span><b>${money(c.anticipo)}</b></div>` : ''}
+        ${Number(c.mensualidad) ? `<div><span>${t('Mensualidad', 'Monthly')}</span><b>${money(c.mensualidad)}</b></div>` : ''}
+        <div><span>${t('Entrega', 'Delivery')}</span><b>${T.dias} ${t('días', 'days')}</b></div></div></div>
+    <div class="card"><div class="doc">${CD.html(c, cfg, { negocio: c.negocio, moneda: c.moneda })}</div></div>
+    <div class="card">
+      <label for="nom">${t('Tu nombre completo', 'Your full name')}</label><input type="text" id="nom" value="${esc(c.cliente)}" autocomplete="name">
+      <label>${t('Tu firma', 'Your signature')}</label><canvas class="pad" id="pad"></canvas>
+      <div class="row"><span>${t('Firma con el dedo o el mouse', 'Sign with your finger or mouse')}</span><button type="button" id="clr">${t('Borrar', 'Clear')}</button></div>
+      <label class="chk"><input type="checkbox" id="ok"> <span>${t('Leí el contrato completo y estoy de acuerdo con su contenido.', 'I have read the full contract and agree to its terms.')}</span></label>
+      <button class="go" id="go" disabled>${t('Firmar contrato', 'Sign contract')}</button>
+      <div class="err" id="err"></div></div>`;
+
+  // pad de firma
+  const pad = document.getElementById('pad'), ctx = pad.getContext('2d');
+  let drawn = false, drawing = false, last = null;
+  const size = () => { const r = pad.getBoundingClientRect(), dpr = window.devicePixelRatio || 1; pad.width = r.width * dpr; pad.height = r.height * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.lineWidth = 2.4; ctx.lineCap = ctx.lineJoin = 'round'; ctx.strokeStyle = '#111827'; drawn = false; check(); };
+  const pos = (e) => { const r = pad.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+  pad.addEventListener('pointerdown', (e) => { drawing = true; last = pos(e); pad.setPointerCapture(e.pointerId); });
+  pad.addEventListener('pointermove', (e) => { if (!drawing) return; const p = pos(e); ctx.beginPath(); ctx.moveTo(last.x, last.y); ctx.lineTo(p.x, p.y); ctx.stroke(); last = p; drawn = true; check(); });
+  ['pointerup', 'pointercancel'].forEach((ev) => pad.addEventListener(ev, () => (drawing = false)));
+  document.getElementById('clr').onclick = () => { ctx.clearRect(0, 0, pad.width, pad.height); drawn = false; check(); };
+  const go = document.getElementById('go'), okb = document.getElementById('ok'), nom = document.getElementById('nom');
+  function check() { go.disabled = !(drawn && okb.checked && nom.value.trim().length >= 3); }
+  okb.onchange = check; nom.oninput = check; size(); window.addEventListener('resize', () => { if (!drawn) size(); });
+  // recorta y achica la firma antes de mandarla
+  function firmaPNG() {
+    const out = document.createElement('canvas'); out.width = 540; out.height = 210;
+    const o = out.getContext('2d'); o.fillStyle = '#fff'; o.fillRect(0, 0, 540, 210); const s = Math.min(540 / pad.width, 210 / pad.height), w = pad.width * s, h = pad.height * s;
+    o.drawImage(pad, (540 - w) / 2, (210 - h) / 2, w, h);
+    return out.toDataURL('image/png');
+  }
+  go.onclick = async () => {
+    go.disabled = true; go.textContent = t('Firmando…', 'Signing…'); document.getElementById('err').textContent = '';
+    try { await rpc('contrato_firmar', { p_token: token, p_nombre: nom.value.trim(), p_firma: firmaPNG() }); app.innerHTML = firmadoHTML(new Date(), nom.value.trim()); window.scrollTo(0, 0); }
+    catch (e) { document.getElementById('err').textContent = e.message; go.textContent = t('Firmar contrato', 'Sign contract'); check(); }
+  };
+})();
+</script>
+</body>
+</html>

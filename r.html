@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Abriendo…</title>
+<script src="/config.js"></script>
+<style>
+  body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:system-ui,-apple-system,sans-serif;background:#f6f7f9;color:#1f2937}
+  .box{text-align:center;padding:24px}h1{font-size:20px;margin:0 0 6px}p{color:#6b7280;margin:0}
+  .spin{width:28px;height:28px;border:3px solid #d1d5db;border-top-color:#0f766e;border-radius:50%;margin:0 auto 14px;animation:s .8s linear infinite}
+  @keyframes s{to{transform:rotate(360deg)}}
+  .folio{display:inline-block;margin-top:18px;padding:6px 14px;border-radius:99px;background:#e6f3f1;color:#0f766e;font-weight:700;font-size:15px;letter-spacing:.02em}
+</style>
+</head>
+<body>
+<div class="box" id="box"><div class="spin"></div><p>Abriendo…</p></div>
+<script>
+(async () => {
+  const EN = /^en/i.test(navigator.language || ''), T = (es, en) => (EN ? en : es);
+  const show = (t, p) => { document.getElementById('box').innerHTML = `<h1>${t}</h1><p>${p}</p>`; document.title = t; };
+  // El código viene en la dirección: /r/codigo  (o ?c=codigo)
+  const slug = (location.pathname.split('/').filter(Boolean)[1] || new URLSearchParams(location.search).get('c') || '').toLowerCase();
+  if (!slug) return show(T('Código no encontrado', 'Code not found'), T('Este código QR no existe.', 'This QR code does not exist.'));
+  const ua = navigator.userAgent;
+  const os = /iPhone|iPad|iPod/i.test(ua) ? 'iPhone/iPad' : /Android/i.test(ua) ? 'Android' : /Windows/i.test(ua) ? 'Windows'
+    : /Macintosh|Mac OS/i.test(ua) ? 'Mac' : /Linux/i.test(ua) ? 'Linux' : 'Otro';
+  // Zona aproximada por la zona horaria del teléfono (no se guarda la ubicación exacta)
+  let city = null, country = null;
+  try { city = Intl.DateTimeFormat().resolvedOptions().timeZone.split('/').pop().replace(/_/g, ' '); } catch {}
+  try { country = (navigator.language.split('-')[1] || '').toUpperCase() || null; } catch {}
+  // Identificador anónimo de este teléfono para contar personas distintas
+  let visitor = null;
+  try { visitor = localStorage.getItem('qrv'); if (!visitor) { visitor = Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('qrv', visitor); } }
+  catch { visitor = Math.random().toString(36).slice(2); }
+  try {
+    const r = await fetch(QR_CONFIG.url + '/rest/v1/rpc/registrar_escaneo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: QR_CONFIG.key },
+      body: JSON.stringify({ p_slug: slug, p_os: os, p_city: city, p_country: country, p_visitor: visitor }),
+    });
+    const d = await r.json();
+    if (d.estado === 'ok' && /^https?:\/\//i.test(d.destino)) return location.replace(d.destino);
+    if (d.estado === 'pausa') return show(T('Código en pausa', 'Code paused'), T('Este código QR está desactivado por el momento.', 'This QR code is turned off for now.'));
+    if (d.estado === 'sin_liga') {
+      show(T('¡Próximamente!', 'Coming soon!'), T('Este código todavía no está activo. Vuelve a escanearlo pronto.', 'This code is not active yet. Please scan it again soon.'));
+      if (d.folio) document.getElementById('box').insertAdjacentHTML('beforeend', `<div class="folio">${d.folio.replace(/[<>&]/g, '')}</div>`);
+      return;
+    }
+    show(T('Código no encontrado', 'Code not found'), T('Este código QR no existe.', 'This QR code does not exist.'));
+  } catch {
+    show(T('Sin conexión', 'No connection'), T('Revisa tu internet y vuelve a escanear el código.', 'Check your internet and scan the code again.'));
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Mi portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#0b1716">
+<script src="/config.js"></script>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#eef1f5;color:#1f2937;line-height:1.45}
+  .top{background:#111827;color:#fff;padding:18px 20px}
+  .top small{opacity:.7;font-size:12px;letter-spacing:.08em;text-transform:uppercase}.top h1{margin:2px 0 0;font-size:22px}
+  .wrap{max-width:760px;margin:0 auto;padding:16px}
+  .card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:14px}
+  h2{font-size:15px;margin:0 0 10px;color:#374151;text-transform:uppercase;letter-spacing:.04em}
+  .kp{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}.kp div{background:#f3f4f6;border-radius:10px;padding:12px}
+  .kp b{display:block;font-size:24px}.kp span{font-size:12px;color:#6b7280}
+  .row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f1f5f9}.row:last-child{border:0}
+  .row small{display:block;color:#6b7280}
+  .pill{font-size:12px;padding:3px 9px;border-radius:99px;font-weight:600;white-space:nowrap}
+  .ok{background:#d1fae5;color:#065f46}.pend{background:#fef3c7;color:#92400e}
+  a.btn{display:inline-block;text-decoration:none;background:#0f766e;color:#fff;border-radius:9px;padding:8px 12px;font-weight:600;font-size:14px;white-space:nowrap}
+  a.btn.alt{background:#fff;color:#111827;border:1px solid #d1d5db}
+  .muted{color:#6b7280;font-size:14px}
+  .foot{text-align:center;color:#9ca3af;font-size:12px;padding:10px}
+
+  body{font-family:Manrope,system-ui,sans-serif;background:#f1f4f3;-webkit-font-smoothing:antialiased}
+  .top{background:#0b1716;background-image:radial-gradient(90% 160% at 0% 0%,rgba(94,234,212,.24),transparent 60%);padding:26px 20px 30px}
+  .top small{color:#5eead4;opacity:1;font-weight:700}.top h1{font-size:26px;font-weight:800;letter-spacing:-.02em}
+  .wrap{margin-top:-14px}
+  .card{border-radius:18px;box-shadow:0 1px 2px rgba(13,23,22,.04),0 10px 30px -18px rgba(13,23,22,.25)}
+  h2{font-size:11.5px;letter-spacing:.09em;color:#6b7876}
+  .kp div{background:linear-gradient(180deg,#f3f8f7,#eaf4f1)}.kp b{font-weight:800;letter-spacing:-.03em;color:#0b4d46}
+  a.btn{background:linear-gradient(180deg,#0e8a7c,#0b7a6e);border-radius:10px;box-shadow:0 6px 16px -8px rgba(11,122,110,.7)}
+  a.btn.alt{background:#fff;box-shadow:none}
+</style>
+</head>
+<body>
+<div class="top"><small id="emp">Vortex</small><h1 id="neg">…</h1></div>
+<div class="wrap" id="app"><div class="card muted">Cargando…</div></div>
+<script>
+(async () => {
+  const app = document.getElementById('app');
+  const token = location.pathname.split('/').filter(Boolean)[1] || new URLSearchParams(location.search).get('t') || '';
+  let d;
+  try {
+    const r = await fetch(QR_CONFIG.url + '/rest/v1/rpc/portal_publico', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: QR_CONFIG.key }, body: JSON.stringify({ p_token: token }) });
+    d = await r.json(); if (!r.ok) throw 0;
+  } catch { app.innerHTML = '<div class="card"><h2>Portal no encontrado</h2><p class="muted">Revisa el link que te mandaron.</p></div>'; return; }
+  const en = d.idioma === 'en', t = (es, eng) => (en ? eng : es);
+  document.documentElement.lang = en ? 'en' : 'es';
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (x) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[x]));
+  const money = (n) => (Number(n) || 0).toLocaleString(en || d.moneda === 'USD' ? 'en-US' : 'es-MX', { style: 'currency', currency: d.moneda || 'MXN', maximumFractionDigits: 2 });
+  const fecha = (x) => new Date(x).toLocaleDateString(en ? 'en-US' : 'es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
+  const safe = (u) => (/^https:\/\//i.test(u || '') ? esc(u) : '');
+  document.getElementById('emp').textContent = d.empresa; document.getElementById('neg').textContent = d.negocio;
+  document.title = `${d.negocio} · ${d.empresa}`;
+  const scMes = d.qrs.reduce((a, q) => a + q.mes, 0), scTot = d.qrs.reduce((a, q) => a + q.total, 0);
+  const deuda = d.compras.reduce((a, c) => a + Math.max(0, c.total - c.pagado), 0);
+  const pendMes = d.mensualidades.filter((m) => !m.pagado);
+  let h = '';
+  if (d.qrs.length) h += `<div class="card"><h2>${t('Tus códigos QR', 'Your QR codes')}</h2>
+    <div class="kp"><div><b>${scMes}</b><span>${t('Escaneos este mes', 'Scans this month')}</span></div><div><b>${scTot}</b><span>${t('Escaneos en total', 'Total scans')}</span></div></div>
+    ${d.qrs.map((q) => `<div class="row"><div><b>${esc(q.name)}</b><small>${q.mes} ${t('este mes', 'this month')} · ${q.total} ${t('en total', 'total')}</small></div><a class="btn alt" href="/s/${esc(q.share_token)}">${t('Ver detalle', 'Details')}</a></div>`).join('')}</div>`;
+  if (d.mensualidades.length) h += `<div class="card"><h2>${t('Mensualidades', 'Monthly plans')}</h2>
+    ${d.mensualidades.map((m) => `<div class="row"><div><b>${esc(m.concepto)}</b><small>${money(m.monto)} ${t('al mes · se paga el día', 'per month · due on day')} ${m.dia}</small></div>
+      ${m.pagado ? `<span class="pill ok">${t('Pagado este mes', 'Paid this month')}</span>` : safe(m.link_pago) ? `<a class="btn" href="${safe(m.link_pago)}" target="_blank" rel="noopener">${t('Pagar', 'Pay')} ${money(m.monto)}</a>` : `<span class="pill pend">${t('Pendiente', 'Pending')}</span>`}</div>`).join('')}</div>`;
+  if (d.compras.length) h += `<div class="card"><h2>${t('Tus compras y pagos', 'Purchases and payments')}</h2>
+    ${deuda > 0 ? `<div class="row"><div><b>${t('Saldo pendiente', 'Balance due')} ${money(deuda)}</b></div>${safe(d.link_pago) ? `<a class="btn" href="${safe(d.link_pago)}" target="_blank" rel="noopener">${t('Pagar en línea', 'Pay online')}</a>` : ''}</div>` : ''}
+    ${d.compras.map((c) => `<div class="row"><div><b>${esc(c.concepto)}</b><small>${fecha(c.fecha)} · ${money(c.total)}</small></div>
+      ${c.pagado >= c.total ? `<span class="pill ok">${t('Pagado', 'Paid')}</span>` : `<span class="pill pend">${t('Debe', 'Owes')} ${money(c.total - c.pagado)}</span>`}</div>`).join('')}</div>`;
+  if (d.contratos.length) h += `<div class="card"><h2>${t('Contratos', 'Contracts')}</h2>
+    ${d.contratos.map((c) => `<div class="row"><div><b>WEB-COM-${String(c.folio).padStart(4, '0')}</b><small>${money(c.total)}</small></div>
+      <a class="btn ${c.firmado ? 'alt' : ''}" href="/f/${esc(c.token)}">${c.firmado ? t('Firmado ✓', 'Signed ✓') : t('Leer y firmar', 'Read and sign')}</a></div>`).join('')}</div>`;
+  if (!h) h = `<div class="card"><p class="muted">${t('Aquí vas a ver tus códigos, pagos y contratos.', 'Your codes, payments and contracts will show up here.')}</p></div>`;
+  let tel = String(d.telefono || '').replace(/\D/g, ''); if (tel.length === 10) tel = (d.moneda === 'USD' ? '1' : '52') + tel;
+  if (tel) h += `<div style="text-align:center;margin:6px 0 14px"><a class="btn" style="background:#16a34a" href="https://wa.me/${tel}" target="_blank" rel="noopener">${t('Escribir a', 'Message')} ${esc(d.empresa)}</a></div>`;
+  h += `<div class="foot">${esc(d.empresa)}${d.correo ? ' · ' + esc(d.correo) : ''}</div>`;
+  app.innerHTML = h;
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1066 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1716">
+<meta name="robots" content="noindex">
+<title>Vortex · Panel</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/config.js"></script>
+<script src="/ui.js"></script>
+<script src="/supa.js"></script>
+<style>
+  .app{display:grid;grid-template-columns:232px 1fr;min-height:100vh;background:linear-gradient(to right,#0f1f1d 232px,transparent 232px)}
+  aside{background:#0f1f1d;color:#d6e4e1;padding:18px 14px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;color:#fff;padding:4px 8px 18px}
+  .brand svg{width:26px;height:26px}
+  .nav a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;color:inherit;text-decoration:none;font-size:14px}
+  .nav a svg{width:18px;height:18px;opacity:.8}
+  .nav a:hover{background:rgba(255,255,255,.06)}
+  .nav a.on{background:rgba(94,234,212,.14);color:#fff}
+  .nav a .count{margin-left:auto;font-size:12px;opacity:.7}
+  aside .new{margin:14px 0 0;width:100%}
+  aside .foot{margin-top:auto;font-size:13px}
+  aside .foot a{color:#9fb5b1;text-decoration:none;padding:8px 10px;display:block}
+  main{padding:26px 28px 60px;max-width:1180px;width:100%}
+  .ph{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+  .ph h1{font-size:24px;margin:0}.ph p{margin:2px 0 0}
+  .tools{display:flex;gap:8px;flex-wrap:wrap}
+  .tools input,.tools select{padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .summary{display:flex;gap:18px;margin-bottom:14px;color:var(--muted);font-size:14px;flex-wrap:wrap}
+  .summary b{color:var(--ink)}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  th{text-align:left;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:10px 12px;border-bottom:1px solid var(--line);background:#fafbfc}
+  td{padding:12px;border-bottom:1px solid var(--line);vertical-align:middle}
+  tr:last-child td{border-bottom:0}
+  tr.row{cursor:pointer}tr.row:hover td{background:#fafbfc}
+  .name{font-weight:600}.dest{max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;color:var(--muted)}
+  .num{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+  .pill{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;background:var(--acc2);color:var(--acc)}
+  .pill.off{background:#f3f4f6;color:var(--muted)}
+  .link{font-family:ui-monospace,Menlo,monospace;font-size:13px}
+  .clients{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+  .cl h2{font-size:16px;margin:0 0 2px}.cl .nums{display:flex;gap:18px;margin:14px 0}
+  .cl .nums b{display:block;font-size:22px;font-variant-numeric:tabular-nums}.cl .nums span{font-size:12px;color:var(--muted)}
+  .cl .acts{display:flex;gap:8px}
+  dialog{border:0;border-radius:14px;padding:0;width:min(560px,94vw);box-shadow:0 20px 60px rgba(0,0,0,.25)}
+  dialog.wide{width:min(1020px,96vw)}
+  dialog::backdrop{background:rgba(15,23,42,.45)}
+  .dh{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line)}
+  .dh h2{margin:0;font-size:18px}
+  .db{padding:18px 20px;max-height:75vh;overflow:auto;background:var(--bg)}
+  .df{display:flex;gap:8px;justify-content:flex-end;padding:14px 20px;border-top:1px solid var(--line)}
+  label{display:block;font-size:13px;font-weight:600;margin:0 0 4px}
+  .field{margin-bottom:14px}
+  .field input{width:100%;padding:9px 11px;border:1px solid #d1d5db;border-radius:8px;background:#fff}
+  .help{font-size:12px;color:var(--muted);margin-top:4px}
+  .inline{display:flex;gap:8px}.inline input{flex:1}
+  .err{color:var(--red);font-size:14px;margin:0 0 10px}
+  .detail{display:grid;grid-template-columns:240px 1fr;gap:16px}
+  .qrbox{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center;position:sticky;top:0}
+  .qrbox svg{width:100%;height:auto;display:block}
+  .qrbox .btns{display:grid;gap:6px;margin-top:10px}
+  .kv{font-size:13px;margin:10px 0 0;text-align:left;word-break:break-all}
+  .kv div{margin-bottom:8px}.kv span{display:block;color:var(--muted);font-size:12px}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#16181d;color:#fff;padding:10px 16px;border-radius:8px;font-size:14px;opacity:0;transition:.2s;pointer-events:none;z-index:2000}
+  .toast.on{opacity:1}
+  [hidden]{display:none!important}
+  .bizgrid{display:grid;grid-template-columns:1.6fr 1fr;gap:12px;margin-top:12px}
+  #bizMap{height:420px}#bizPick{height:300px;border-radius:10px;border:1px solid var(--line)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px}
+  .chip{display:flex;align-items:center;gap:5px;border:1px solid var(--line);background:#fff;border-radius:99px;padding:3px 9px;font-size:12px;cursor:pointer}
+  .chip i,.dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none}.chip.off{opacity:.4;text-decoration:line-through}
+  .hbar span .dot{display:inline-block;width:10px;height:10px;margin-right:4px;vertical-align:-1px;border-radius:50%}
+  .kpi.meta{grid-column:span 1}.prog{height:8px;background:#e5e7eb;border-radius:99px;margin:8px 0 4px;overflow:hidden}.prog i{display:block;height:100%;background:var(--acc);border-radius:99px}
+  .kpis.two{grid-template-columns:1fr 1fr}
+  .tags{display:flex;flex-wrap:wrap;gap:4px}.tag2{font-size:12px;background:#f3f4f6;border-radius:6px;padding:2px 7px}.tag2.done{background:#dcfce7;color:#166534}
+  .wa{color:#047857;text-decoration:none;font-weight:500}
+  .bd-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.acts a{text-decoration:none}
+  .mini{border:1px solid var(--line);border-radius:8px;background:#fff}.mini div{display:flex;justify-content:space-between;gap:10px;padding:8px 10px;border-bottom:1px solid var(--line);font-size:13px}.mini div:last-child{border-bottom:0}
+  .servs{display:grid;grid-template-columns:1fr 1fr;gap:2px 10px}
+  .field textarea,.g3 select{width:100%;padding:9px 11px;border:1px solid #d1d5db;border-radius:8px;font:inherit;background:#fff}
+  .hoy{background:var(--acc2);border:1px solid #b7e0d9;border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:15px}
+  .period{display:inline-flex;margin-bottom:12px;background:#fff}.period button{padding:7px 14px}
+  .col2{flex:1;height:100%;display:flex;align-items:flex-end;gap:1px;min-width:0}.col2 i{flex:1;border-radius:2px 2px 0 0}
+  .col2 .a,.legend .a{background:var(--acc)}.col2 .b,.legend .b{background:#f87171}
+  .legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-bottom:6px}.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+  table.prod{border:1px solid var(--line)}table.prod input{width:100%;padding:6px 8px;border:1px solid #d1d5db;border-radius:7px;font:inherit}
+  @media(max-width:860px){.bizgrid,.bd-grid{grid-template-columns:1fr}#bizMap{height:320px}.servs{grid-template-columns:1fr}}
+  table.ins input,table.ins select{width:100%;min-width:60px;padding:6px 8px;border:1px solid #d1d5db;border-radius:7px;font:inherit;background:#fff}
+  table.ins td{padding:8px 8px}table.ins td:first-child input{min-width:190px}tr.lowrow td{background:#fef2f2}input.lowin{border-color:#f87171!important;color:#b91c1c;font-weight:600}
+  .field select{width:100%;padding:9px 11px;border:1px solid #d1d5db;border-radius:8px;background:#fff;font:inherit}
+  table.prod select{width:100%;padding:6px 8px;border:1px solid #d1d5db;border-radius:7px;font:inherit;background:#fff}
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:14px 0 14px}
+  .tabs button{border:0;background:none;padding:10px 14px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;font-size:14px;margin-bottom:-1px}
+  .tabs button.on{color:var(--ink);border-color:var(--acc);font-weight:600}
+  .tabs b{font-size:12px;background:#eef0f2;border-radius:99px;padding:1px 7px;margin-left:3px;font-weight:600}
+  .kanban{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:start}
+  .kanban.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .lane{background:#eceff2;border-radius:12px;padding:10px;min-height:420px;transition:background .15s}
+  .lane.over{background:#dbeafe;outline:2px dashed #93c5fd}
+  .lane-h{background:#fff;border-radius:9px;border-top:4px solid;padding:10px 12px;margin-bottom:10px}
+  .lane-h b{font-size:15px}.lane-h .cnt{font-size:12px;background:#eef0f2;border-radius:99px;padding:1px 8px;margin-left:4px}
+  .lane-h em{display:block;font-style:normal;font-weight:600;margin-top:2px}
+  .lane-b{display:grid;gap:8px}
+  .lane-empty{border:2px dashed #cfd5db;border-radius:9px;padding:22px 10px;text-align:center;color:var(--muted);font-size:13px}
+  .kcard{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:grab;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+  .kcard:hover{border-color:#b6c2c0;box-shadow:0 2px 8px rgba(0,0,0,.08)}.kcard.dragging{opacity:.45}
+  .kc-top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}.kc-val{font-weight:700;color:var(--acc);white-space:nowrap}
+  .kc-foot{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:10px}
+  .kc-acts{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+  .kc-wa{font-size:12px;color:#047857;text-decoration:none;font-weight:600}
+  .seg-badge{display:inline-block;margin-top:6px;font-size:12px;padding:2px 8px;border-radius:6px;background:#f3f4f6;color:#374151}
+  .seg-badge.now{background:#fef3c7;color:#92400e;font-weight:600}.seg-badge.late{background:#fee2e2;color:#b91c1c;font-weight:600}
+  @media(max-width:860px){.kanban,.kanban.four{grid-template-columns:1fr}.lane{min-height:0}}
+  .pp{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #f1f5f9}.pp input{width:110px;padding:6px 8px;border:1px solid #d1d5db;border-radius:7px;font:inherit}
+  .compras input,.compras select{padding:5px 7px;border:1px solid #d1d5db;border-radius:7px;font:inherit;background:#fff;max-width:200px}
+  .agrow{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:10px 12px;margin-bottom:8px;flex-wrap:wrap}
+  .agnum{width:24px;height:24px;border-radius:50%;background:#0f766e;color:#fff;font-weight:700;font-size:12px;display:grid;place-items:center;flex:none}.agnum:empty{background:#e5e7eb}
+  .agbtns{display:flex;gap:6px;flex-wrap:wrap;width:100%;padding-left:34px}
+  .agpin{width:26px;height:26px;border-radius:50%;background:#0f766e;color:#fff;font-weight:700;font-size:12px;display:grid;place-items:center;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)}
+  .agenda{align-items:start}.agbtns a.btn{text-decoration:none}
+  .metas{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:12px}.metas b{font-size:22px}.metas h3{margin-bottom:6px}
+  .mini2{width:100%;border:0}.mini2 td,.mini2 th{padding:7px 6px}
+  .warn-t{color:#92400e;font-weight:600}
+  .wa-tabs{flex-wrap:wrap}.wa-tabs button{flex:1 1 auto;font-size:12px;padding:6px 8px}
+  table.cot input,table.cot select{width:100%;padding:6px 8px;border:1px solid #d1d5db;border-radius:7px;font:inherit;background:#fff}
+  .kc-wa{border:0;background:none;padding:0;cursor:pointer;font:inherit}
+  @media(max-width:860px){.metas{grid-template-columns:1fr}}
+  .pill.warn{background:#fef3c7;color:#92400e}
+  .warnbtn{border-color:#fcd34d;color:#92400e;background:#fffbeb}
+  aside .new.lote{margin-top:8px;background:transparent;color:#d6e4e1;border-color:rgba(255,255,255,.2)}
+  aside .new.lote:hover{background:rgba(255,255,255,.06)}
+  #dDest.nolink{color:#92400e;font-weight:600}
+  .g2b{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .gate{min-height:100vh;display:grid;place-items:center;padding:16px}
+  .gate form{background:#fff;border:1px solid var(--line);border-radius:14px;padding:28px;width:min(360px,100%)}
+  .gate h1{font-size:20px;margin:0 0 4px}.gate p{margin:0 0 16px}
+  .gate input{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;margin-bottom:10px}
+  .gate .btn{width:100%;padding:10px}
+  .chk{display:flex;gap:6px;align-items:center;font-weight:500;font-size:13px;margin:4px 0}
+  .seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .seg button{flex:1;border:0;background:#fff;padding:7px 4px;cursor:pointer;font-size:13px}
+  .seg button+button{border-left:1px solid var(--line)}.seg button.on{background:var(--acc);color:#fff}
+  .lgrid{display:grid;grid-template-columns:1.1fr 1fr 220px;gap:12px;align-items:start}
+  .lrows{max-height:340px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+  .lrow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--line)}
+  .lrow:last-child{border-bottom:0}.lrow input{width:64px;padding:6px;border:1px solid #d1d5db;border-radius:7px;text-align:center}
+  .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px}
+  .g3 input,.g3 select{width:100%;padding:7px 8px;border:1px solid #d1d5db;border-radius:8px;background:#fff}
+  .g3 input[type=color]{padding:2px;height:34px}
+  .lpv{background:#e5e7eb;border-radius:8px;padding:10px;margin-bottom:8px}.lpv canvas{display:block;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+  @media(max-width:900px){.lgrid{grid-template-columns:1fr}}
+  [data-view]{display:none}[data-view].on{display:block}
+
+  @media(max-width:860px){
+    .app{grid-template-columns:1fr;background:none}
+    aside{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:10px 12px}
+    .brand{padding:0 8px 0 0}.nav{display:flex;gap:2px}.nav a .count{display:none}
+    aside .new{width:auto;margin:0 0 0 auto}aside .foot{margin:0}
+    main{padding:18px 14px 50px}.detail{grid-template-columns:1fr}.hide-sm{display:none}
+  }
+</style>
+<style id="vx-skin">
+  /* ===== Vortex · capa de diseño ===== */
+  :root{--bg:#f3f5f4;--card:#fff;--ink:#0d1716;--muted:#5f6b69;--line:#e3e8e6;--acc:#0b7a6e;--acc2:#e3f4f0;--glow:#5eead4;--side:#0b1716;--r:14px;
+    --sh:0 1px 2px rgba(13,23,22,.04),0 4px 16px -8px rgba(13,23,22,.10)}
+  body{font-family:Manrope,system-ui,-apple-system,"Segoe UI",sans-serif;font-feature-settings:"tnum" 1,"ss01" 1;-webkit-font-smoothing:antialiased;letter-spacing:-.005em}
+  ::selection{background:#bff3e8}
+  .app{grid-template-columns:240px 1fr;background:linear-gradient(to right,var(--side) 240px,transparent 240px)}
+  aside{background:var(--side);padding:20px 14px 16px;background-image:radial-gradient(120% 60% at 0% 0%,rgba(94,234,212,.10),transparent 60%)}
+  .brand{font-size:18px;letter-spacing:.02em;font-weight:800;padding:2px 8px 22px}
+  .brand svg{filter:drop-shadow(0 0 10px rgba(94,234,212,.45))}
+  .nav a{padding:9px 11px;border-radius:10px;font-weight:500;color:#b9cbc7;transition:background .15s,color .15s}
+  .nav a:hover{color:#fff}
+  .nav a.on{background:linear-gradient(90deg,rgba(94,234,212,.18),rgba(94,234,212,.04));color:#fff;box-shadow:inset 2px 0 0 var(--glow)}
+  .nav a.on svg{opacity:1;stroke:var(--glow)}
+  main{padding:30px 34px 70px;max-width:1240px}
+  .ph h1{font-size:28px;font-weight:800;letter-spacing:-.025em}
+  .ph p{font-size:14.5px}
+  .card,.kpi,table,.agrow{border-color:var(--line);border-radius:var(--r);box-shadow:var(--sh)}
+  .kpi{padding:14px 16px;position:relative;overflow:hidden}
+  .kpi b{font-size:28px;font-weight:800;letter-spacing:-.03em}
+  .kpi span{font-size:12.5px;font-weight:500}
+  h3{font-size:11.5px;font-weight:700;letter-spacing:.08em;color:#6b7876}
+  .btn{border-radius:10px;font-weight:600;transition:transform .08s,background .15s,border-color .15s,box-shadow .15s}
+  .btn:active{transform:translateY(1px)}
+  .btn.pri{background:linear-gradient(180deg,#0e8a7c,#0b7a6e);border-color:#0a6d62;box-shadow:0 1px 0 rgba(255,255,255,.15) inset,0 4px 12px -4px rgba(11,122,110,.55)}
+  .btn:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--glow);outline-offset:2px}
+  input,select,textarea{transition:border-color .15s,box-shadow .15s}
+  input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-shadow:0 0 0 3px rgba(11,122,110,.14);outline:none}
+  th{background:#f7f9f8;font-size:11px;letter-spacing:.07em}
+  tbody tr{transition:background .12s}tbody tr:hover td{background:#fafcfb}
+  .pill{font-weight:600;letter-spacing:.01em}
+  .hoy{background:linear-gradient(90deg,#e3f4f0,#f0faf7);border-color:#c5e9e1;border-radius:var(--r)}
+  .prog{height:9px;background:#e9eeec}.prog i{background:linear-gradient(90deg,#0b7a6e,#2dd4bf)}
+  .tabs button{font-weight:600}
+  dialog{border-radius:18px;box-shadow:0 30px 80px -20px rgba(13,23,22,.45)}
+  dialog::backdrop{background:rgba(8,18,17,.55);backdrop-filter:blur(3px)}
+  dialog[open]{animation:vxIn .18s cubic-bezier(.2,.8,.2,1)}
+  @keyframes vxIn{from{opacity:0;transform:translateY(8px) scale(.985)}}
+  [data-view].on{animation:vxFade .2s ease-out}
+  @keyframes vxFade{from{opacity:0;transform:translateY(4px)}}
+  .empty{color:var(--muted)}
+  .onb{width:min(620px,94vw)}.onb h2{font-size:24px;font-weight:800;letter-spacing:-.02em;margin:4px 0 6px}.onb .muted{margin:0 0 16px}
+  .onb-top{background:#0b1716;background-image:radial-gradient(100% 160% at 0% 0%,rgba(94,234,212,.28),transparent 60%);padding:22px 24px;display:flex;justify-content:space-between;align-items:center}
+  .onb-logo{width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,#5eead4,#0b7a6e);color:#0b1716;font-weight:800;font-size:22px;display:grid;place-items:center;box-shadow:0 0 22px rgba(94,234,212,.45)}
+  #onbDots{display:flex;gap:6px}#onbDots i{width:26px;height:5px;border-radius:9px;background:rgba(255,255,255,.18);transition:background .25s}#onbDots i.on{background:#5eead4}
+  .onb-opt{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;cursor:pointer}
+  .onb-opt span{flex:1;font-weight:600}.onb-opt input[type=number]{width:110px;padding:7px 9px;border:1px solid #d1d5db;border-radius:8px}
+  .onb-opt:has(input:checked){border-color:#5eead4;background:#f0fbf8}
+  .start{margin-bottom:14px;background:linear-gradient(180deg,#fff,#f7fbfa)}.start-h{display:flex;justify-content:space-between;align-items:center;gap:10px}.start-h b{font-size:18px;font-weight:800}
+  .start-g{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+  .start-i{display:flex;gap:10px;align-items:flex-start;text-align:left;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;font:inherit;color:inherit;transition:border-color .15s,transform .1s}
+  .start-i:hover:not(:disabled){border-color:#5eead4;transform:translateY(-1px)}.start-i small{display:block;color:var(--muted);font-size:12.5px}
+  .start-i .ck{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid #cbd5d3;display:grid;place-items:center;font-size:12px;color:#fff;margin-top:1px}
+  .start-i.ok{opacity:.6;cursor:default}.start-i.ok .ck{background:#0b7a6e;border-color:#0b7a6e}.start-i.ok b{text-decoration:line-through}
+  @media(max-width:860px){.start-g{grid-template-columns:1fr}.onb-opt input[type=number]{width:90px}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+  /* ===== Celular: barra de abajo, tablas que se deslizan, ventanas a pantalla completa ===== */
+  @media(max-width:860px){
+    body{font-size:15px;padding-bottom:calc(68px + env(safe-area-inset-bottom))}
+    .app{grid-template-columns:1fr;background:none}
+    aside{position:sticky;top:0;z-index:40;height:auto;flex-direction:row;align-items:center;padding:10px 12px calc(10px);gap:8px;background-image:none}
+    .brand{padding:0;font-size:17px;flex:1}
+    aside .new{width:auto;margin:0;padding:7px 11px;font-size:13px}
+    aside .new.lote{display:none}
+    aside .foot{display:none}
+    .nav{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;gap:0;overflow-x:auto;scrollbar-width:none;background:rgba(11,23,22,.97);backdrop-filter:blur(10px);
+      padding:6px 4px calc(6px + env(safe-area-inset-bottom));border-top:1px solid rgba(255,255,255,.08)}
+    .nav::-webkit-scrollbar{display:none}
+    .nav a{flex:0 0 auto;min-width:72px;flex-direction:column;gap:3px;font-size:10.5px;padding:6px 6px;text-align:center;line-height:1.1;box-shadow:none!important}
+    .nav a svg{width:21px;height:21px}
+    .nav a.on{background:rgba(94,234,212,.12)}
+    main{padding:18px 14px 30px}
+    .ph{align-items:flex-start}.ph h1{font-size:24px}
+    .tools{width:100%}.tools .btn{flex:1 1 auto}
+    .kpis,.kpis.five{grid-template-columns:1fr 1fr!important;gap:8px}
+    .kpi{padding:12px}.kpi b{font-size:22px}
+    .grid2{grid-template-columns:1fr}
+    table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap}
+    td,th{padding:10px}
+    .tabs{overflow-x:auto;white-space:nowrap;scrollbar-width:none}
+    input,select,textarea{font-size:16px!important}
+    dialog{width:100vw;max-width:100vw;max-height:100dvh;height:100dvh;margin:0;border-radius:0}
+    dialog .df{position:sticky;bottom:0;background:#fff;padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+    .g2b,.g3{grid-template-columns:1fr!important}
+    .g3>div[style*="span"]{grid-column:auto!important}
+    .agbtns{padding-left:0}.agbtns .btn{flex:1 1 auto;text-align:center}
+    .metas{gap:14px}
+    .seg{overflow-x:auto}
+    .app>*,main,main>section{min-width:0;max-width:100vw}
+    main{overflow-x:hidden}
+    .tools .btn{white-space:normal;min-width:0}
+    .card,.metas,.hoy{min-width:0;max-width:100%}
+    dialog[open]{display:flex;flex-direction:column}
+    dialog>form{display:flex;flex-direction:column;flex:1;min-height:0}
+    dialog .db{flex:1;overflow-y:auto}
+    dialog .df .btn{flex:1}
+    .nav a[data-nav=negocios]{order:1}.nav a[data-nav=caja]{order:2}.nav a[data-nav=cobros]{order:3}.nav a[data-nav=cotizaciones]{order:4}
+    .nav a[data-nav=inventario]{order:5}.nav a[data-nav=resumen]{order:6}.nav a[data-nav=codigos]{order:7}.nav a[data-nav=clientes]{order:8}
+  }
+  label.chk{display:flex!important;align-items:center;gap:8px;font-weight:500}label.chk input{width:auto!important;margin:0}
+</style>
+</head>
+<body>
+<div class="gate" id="gate" hidden>
+  <form id="fLogin">
+    <h1>Vortex</h1>
+    <p class="muted">Menús digitales, páginas web y reseñas · Entra con tu cuenta</p>
+    <p class="err" id="loginErr" hidden></p>
+    <input type="email" name="email" placeholder="Correo" autocomplete="username" required>
+    <input type="password" name="password" placeholder="Contraseña" autocomplete="current-password" required>
+    <button class="btn pri" id="loginBtn">Entrar</button>
+  </form>
+</div>
+<div class="app" id="app" hidden>
+  <aside>
+    <div class="brand">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#5eead4" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v.01M14 21h7v-4"/></svg>
+      Vortex
+    </div>
+    <nav class="nav">
+      <a href="#resumen" data-nav="resumen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>Resumen</a>
+      <a href="#codigos" data-nav="codigos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h7v7h-7z"/></svg>Códigos QR<span class="count" id="nQr"></span></a>
+      <a href="#clientes" data-nav="clientes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-6h6v6"/></svg>QR por cliente<span class="count" id="nCl"></span></a>
+      <a href="#negocios" data-nav="negocios"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>Negocios</a>
+      <a href="#caja" data-nav="caja"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>Caja</a>
+      <a href="#cotizaciones" data-nav="cotizaciones"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg>Cotizaciones</a>
+      <a href="#cobros" data-nav="cobros"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5M12 7v5l3 2"/></svg>Cobros mensuales</a>
+      <a href="#inventario" data-nav="inventario"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8 12 3 3 8v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>Inventario</a>
+
+    </nav>
+    <button class="btn pri new" id="newBtn">+ Nuevo QR</button>
+    <button class="btn new lote" id="loteBtn">+ Lote de QR en blanco</button>
+    <div class="foot"><a href="#" id="logout">Cerrar sesión</a></div>
+  </aside>
+
+  <main>
+    <!-- RESUMEN -->
+    <section data-view="resumen">
+      <div class="ph"><div><h1>Resumen</h1><p class="muted">Todos tus códigos QR · hora del centro de México</p></div>
+        <button class="btn" id="refresh">Actualizar</button></div>
+      <div id="vxStart"></div>
+      <div id="ov"><div class="card empty">Cargando…</div></div>
+    </section>
+
+    <!-- CÓDIGOS -->
+    <section data-view="codigos">
+      <div class="ph"><div><h1>Códigos QR</h1></div>
+        <div class="tools">
+          <input id="q" type="search" placeholder="Buscar…">
+          <select id="fc"><option value="">Todos los clientes</option></select>
+          <select id="fl"><option value="">Con y sin liga</option><option value="sin">Sin liga</option><option value="con">Con liga</option></select>
+          <button class="btn" id="printBtn">Imprimir etiquetas</button>
+        </div>
+      </div>
+      <div class="summary" id="summary"></div>
+      <div id="list"></div>
+    </section>
+
+    <!-- CLIENTES -->
+    <section data-view="clientes">
+      <div class="ph"><div><h1>QR por cliente</h1><p class="muted">Tus códigos QR agrupados por negocio</p></div></div>
+      <div class="clients" id="clients"></div>
+    </section>
+    <!-- NEGOCIOS -->
+    <section data-view="negocios">
+      <div class="ph"><div><h1>Negocios</h1><p class="muted">Tu embudo de ventas: de contactado a cliente</p></div>
+        <div class="tools"><button class="btn" id="bizAjustes">Metas y ajustes</button><button class="btn pri" id="bizNew">+ Negocio</button></div></div>
+      <div class="kpis" id="bizKpis"></div>
+      <div id="vxStart2"></div>
+      <div id="bizMetas"></div>
+      <div class="tabs" id="bizTabs">
+        <button data-tab="agenda">Agenda de hoy <b id="tabAg" class="down"></b></button>
+        <button data-tab="embudo">Prospectos <b id="tabCount"></b></button>
+        <button data-tab="clientes">Clientes <b id="tabCli"></b></button>
+        <button data-tab="mapa">Mapa y estadísticas</button>
+      </div>
+      <div data-bizpane="embudo">
+        <div class="tools" style="margin:0 0 12px"><input id="bizQ" type="search" placeholder="Buscar negocio, giro, servicio…" style="flex:1;min-width:200px"><button class="btn" id="lostToggle">Ver perdidos</button></div>
+        <div class="kanban" id="kanban"></div>
+        <p class="muted small" style="margin-top:8px">Arrastra cada negocio al siguiente paso, o usa los botones de la tarjeta. Cuando le registras una venta, pasa a <b>Clientes</b>.</p>
+      </div>
+      <div data-bizpane="agenda" hidden>
+        <div class="grid2 agenda"><div id="agList"></div><div><div class="card" style="padding:10px"><div id="agMap" style="height:380px;border-radius:10px"></div><p id="agRuta" style="margin:10px 2px 2px"></p></div></div></div>
+      </div>
+      <div data-bizpane="clientes" hidden>
+        <div class="tools" style="margin:0 0 12px"><input id="cliQ" type="search" placeholder="Buscar cliente…" style="flex:1;min-width:200px"></div>
+        <div id="cliList"></div>
+      </div>
+      <div data-bizpane="mapa" hidden>
+        <div class="bizgrid" style="margin-top:0">
+          <div class="card" style="padding:0;overflow:hidden"><div id="bizMap"></div><div class="chips" id="bizChips"></div></div>
+          <div style="display:grid;gap:12px;align-content:start">
+            <div class="card"><h3>Negocios por paso</h3><div id="bizStates"></div></div>
+            <div class="card"><h3>Nuevos por semana · 12 semanas</h3><div id="bizWeeks"></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CAJA -->
+    <section data-view="caja">
+      <div class="ph"><div><h1>Caja</h1><p class="muted">Lo que vendes, lo que gastas y lo que te queda</p></div>
+        <div class="tools"><button class="btn" id="cajaProductos">Productos e inventario</button><button class="btn" id="cajaGasto">− Gasto</button><button class="btn pri" id="cajaVenta">+ Venta</button></div></div>
+      <div class="hoy" id="cajaHoy"></div>
+      <div id="cajaMetas"></div>
+      <div class="card" style="margin-bottom:12px"><h3>Te deben <span id="debenTot" class="down"></span></h3><div id="cajaDeben"></div></div>
+      <div class="seg period" id="cajaPeriod"><button data-p="hoy">Hoy</button><button data-p="semana">7 días</button><button data-p="mes" class="on">Este mes</button><button data-p="anio">Este año</button><button data-p="todo">Todo</button></div>
+      <div class="kpis five" id="cajaKpis"></div>
+      <div class="card"><h3>Ingresos y gastos por día · últimos 30 días</h3><div id="cajaDias"></div></div>
+      <div class="grid2">
+        <div class="card"><h3>Lo que más vendes</h3><div id="cajaProd"></div></div>
+        <div class="card"><h3>En qué gastas</h3><div id="cajaCat"></div></div>
+      </div>
+      <div class="grid2">
+        <div class="card"><h3>Facturado por mes · este año</h3><div id="cajaMeses"></div></div>
+        <div class="card"><h3>Ventas y comisiones por vendedor</h3><div id="cajaCom"></div></div>
+      </div>
+      <h3 style="margin:18px 0 8px">Movimientos</h3>
+      <div id="cajaMov"></div>
+    </section>
+    <!-- COTIZACIONES -->
+    <section data-view="cotizaciones">
+      <div class="ph"><div><h1>Cotizaciones</h1><p class="muted">Propuestas con tu marca en PDF, listas para mandar por WhatsApp</p></div>
+        <div class="tools"><button class="btn" id="conNew">+ Contrato</button><button class="btn pri" id="cotNew">+ Cotización</button></div></div>
+      <div class="kpis" id="cotKpis"></div>
+      <div id="cotList"></div>
+      <p class="muted small" style="margin-top:8px">Al crear una cotización, el negocio pasa a <b>Negociando</b>. Cuando te digan que sí, dale <b>Aceptada</b>: se registran las ventas en la Caja, se descuenta el material y el negocio pasa a cliente.</p>
+      <div class="card" style="margin-top:14px"><h3>Contratos del sistema dental</h3><div id="conList"></div>
+        <p class="muted small" style="margin:8px 0 0">El folio WEB-COM sale consecutivo, el subtotal, el IVA y la cantidad con letra se calculan solos. Cuando lo firmen, dale <b>Firmado</b> y se registra la venta. Antes de usarlo con clientes, que lo revise un abogado.</p></div>
+    </section>
+
+    <!-- COBROS -->
+    <section data-view="cobros">
+      <div class="ph"><div><h1>Cobros mensuales</h1><p class="muted">Menú digital, hosting, mantenimiento… lo que te pagan cada mes</p></div>
+        <div class="tools"><button class="btn pri" id="susNew">+ Cobro mensual</button></div></div>
+      <div class="kpis" id="cobKpis"></div>
+      <div id="cobList"></div>
+      <p class="muted small" style="margin-top:8px"><b>Cobrar</b> registra el pago del mes en la Caja. <b>Recordar</b> abre WhatsApp con el mensaje listo. Pon la fecha de renovación del dominio o del hosting y te avisa 30 días antes.</p>
+    </section>
+
+    <!-- INVENTARIO -->
+    <section data-view="inventario">
+      <div class="ph"><div><h1>Inventario</h1><p class="muted">Tus materiales, cuánto tienes y cuánto te cuesta hacer cada producto</p></div>
+        <div class="tools"><button class="btn" id="invEntrada">Mover stock</button><button class="btn" id="invAddIns">+ Material</button><button class="btn pri" id="invAddProd">+ Producto</button></div></div>
+      <div class="kpis" id="invKpis"></div>
+      <div class="card"><h3>Productos · cuánto te cuesta y cuánto ganas</h3><div id="invProd"></div></div>
+      <div class="card" style="margin-top:12px"><h3>Materiales y stock</h3>
+        <p class="muted small" style="margin:-4px 0 10px">Escribe directo en la tabla, se guarda solo. Con <b>Mover stock</b> registras lo que compras, lo que sale (merma, muestras, uso propio) o un conteo de lo que tienes de verdad. Cada venta descuenta el material sola y todo queda en el <b>Historial</b>.</p>
+        <div id="invIns"></div></div>
+      <div class="grid2">
+        <div class="card"><h3>Lista de compras</h3><div id="invCompras"></div></div>
+        <div class="card"><h3 style="display:flex;justify-content:space-between;align-items:center">Proveedores <button class="btn sm" id="invAddProv">+ Proveedor</button></h3><div id="invProv"></div></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Crear / editar -->
+<dialog id="dlgEdit">
+  <form id="fEdit" method="dialog">
+    <div class="dh"><h2 id="editTitle">Nuevo QR</h2><button type="button" class="btn sm" data-close>✕</button></div>
+    <div class="db" style="background:#fff">
+      <p class="err" id="editErr" hidden></p>
+      <div class="field"><label>Nombre del QR *</label><input name="name" required placeholder="Ej. Tarjeta reseñas mostrador"></div>
+      <div class="field"><label>Cliente / negocio</label><input name="client" list="clientsDl" placeholder="Ej. Lomelí Cuidado Dental"><datalist id="clientsDl"></datalist></div>
+      <div class="field">
+        <label>Liga (a dónde manda el QR)</label>
+        <input name="destination" placeholder="https://g.page/r/.../review">
+        <div class="help">Puedes dejarla vacía y ponerla después. La cambias cuando quieras y el QR impreso sigue funcionando.</div>
+      </div>
+      <div class="field">
+        <label>¿Tienes el Place ID de Google? (opcional)</label>
+        <div class="inline"><input id="placeId" placeholder="ChIJ..."><button type="button" class="btn" id="mkReview">Generar link de reseña</button></div>
+        <div class="help">Crea el link que abre directo la ventana para dejar reseña.</div>
+      </div>
+      <div class="field" id="slugField">
+        <label>Código corto (opcional)</label>
+        <input name="slug" placeholder="se genera solo, ej. k7m2qa">
+        <div class="help">Es la parte final del link del QR. No se puede cambiar después.</div>
+      </div>
+    </div>
+    <div class="df"><button type="button" class="btn" data-close>Cancelar</button><button class="btn pri" id="saveBtn">Guardar</button></div>
+  </form>
+</dialog>
+
+<!-- Negocio: detalle -->
+<dialog id="dlgBizDetail" class="wide">
+  <div class="dh"><h2 id="bdTitle"></h2><button class="btn sm" data-close>✕</button></div>
+  <div class="db" id="bdBody"></div>
+  <div class="df"><button class="btn" id="bdEdit">Editar</button><button class="btn pri" id="bdVenta">+ Registrar venta</button></div>
+</dialog>
+
+<!-- Negocio: crear / editar -->
+<dialog id="dlgBiz" class="wide">
+  <form id="fBiz" method="dialog">
+    <div class="dh"><h2 id="bizFormTitle">Nuevo negocio</h2><button type="button" class="btn sm" data-close>✕</button></div>
+    <div class="db" style="background:#fff">
+      <p class="err" id="bizErr" hidden></p>
+      <div class="bd-grid">
+        <div>
+          <div class="field"><label>Nombre del negocio *</label><input name="nombre" required placeholder="Ej. Tacos El Güero"></div>
+          <div class="g2b">
+            <div class="field"><label>Giro</label><input name="giro" placeholder="Ej. Restaurante"></div>
+            <div class="field"><label>Teléfono / WhatsApp</label><input name="telefono" inputmode="tel" placeholder="311 123 4567"></div>
+          </div>
+          <div class="field"><label>Persona de contacto (con título, sale en contratos)</label><input name="contacto" placeholder="Ej. Dra. Edith Montero"></div>
+          <div class="field"><label>Dirección o referencia</label><input name="direccion" placeholder="Ej. Av. México 120, Centro"></div>
+          <div class="g3">
+            <div><label>Paso</label><select name="estado">
+              <option value="contactado">Contactado</option><option value="negociando">Negociando</option><option value="cerrado">Cerrado</option>
+              <option value="cliente">Cliente</option><option value="perdido">Perdido</option></select></div>
+            <div><label>Valor estimado</label><input name="valor" type="number" min="0" step="1" placeholder="$"></div>
+            <div><label>Próximo seguimiento</label><input name="proximo" type="date"></div>
+          </div>
+          <div class="field"><label>Vendedor</label><select name="vendedor"></select></div>
+          <div class="field"><label>Servicios que le puedes ofrecer</label><div id="bizServ" class="servs"></div></div>
+          <div class="field"><label>Notas</label><textarea name="notas" rows="3" placeholder="Con quién hablaste, qué te dijo, cuándo volver…"></textarea></div>
+        </div>
+        <div>
+          <label>Ubicación</label>
+          <div id="bizPick"></div>
+          <div class="inline" style="margin-top:8px;align-items:center"><button type="button" class="btn sm" id="bizMe">Usar mi ubicación</button><span class="help" id="pickInfo">Toca el mapa donde está el negocio</span></div>
+          <input type="hidden" name="lat"><input type="hidden" name="lng">
+        </div>
+      </div>
+    </div>
+    <div class="df" style="justify-content:space-between"><button type="button" class="btn danger" id="bizDel">Borrar</button>
+      <div style="display:flex;gap:8px"><button type="button" class="btn" data-close>Cancelar</button><button class="btn pri" id="bizSave">Guardar</button></div></div>
+  </form>
+</dialog>
+
+<!-- Venta -->
+<dialog id="dlgVenta">
+  <form id="fVenta" method="dialog">
+    <div class="dh"><h2>Registrar venta</h2><button type="button" class="btn sm" data-close>✕</button></div>
+    <div class="db" style="background:#fff">
+      <p class="err" id="ventaErr" hidden></p>
+      <div class="field"><label>Negocio</label><select name="negocio"></select></div>
+      <div class="field"><label>Producto</label><select name="producto"></select></div>
+      <div class="field"><label>Concepto *</label><input name="concepto" placeholder="Ej. Placa de reseñas"></div>
+      <div class="g3">
+        <div><label>Cantidad</label><input name="cantidad" type="number" min="0.01" step="0.01" value="1"></div>
+        <div><label>Precio c/u</label><input name="precio" type="number" min="0" step="0.01"></div>
+        <div><label>Costo c/u</label><input name="costo" type="number" min="0" step="0.01"></div>
+      </div>
+      <div class="g2b">
+        <div class="field"><label>Fecha</label><input name="fecha" type="date"></div>
+        <div class="field"><label>Pago</label><select name="metodo"><option>Efectivo</option><option>Transferencia</option><option>Tarjeta</option></select></div>
+      </div>
+ <div class="g2b"><div class="field"><label>Vendedor</label><select name="vendedor"></select></div>
+        <div class="field"><label>Te pagó (vacío = todo)</label><input name="pagado" type="number" min="0" step="0.01" placeholder="Pagó completo"></div></div>
+      <p id="ventaTot" style="margin:4px 0 0"></p>
+    </div>
+    <div class="df"><button type="button" class="btn" data-close>Cancelar</button><button class="btn pri" id="ventaSave">Guardar venta</button></div>
+  </form>
+</dialog>
+
+<!-- Gasto -->
+<dialog id="dlgGasto">
+  <form id="fGasto" method="dialog">
+    <div class="dh"><h2>Registrar gasto</h2><button type="button" class="btn sm" data-close>✕</button></div>
+    <div class="db" style="background:#fff">
+      <p class="err" id="gastoErr" hidden></p>
+      <div class="field"><label>Concepto *</label><input name="concepto" placeholder="Ej. Papel fotográfico, gasolina, etiquetas NFC"></div>
+      <div class="g3">
+        <div style="grid-column:span 2"><label>Categoría</label><select name="categoria"></select></div>
+        <div><label>Monto *</label><input name="monto" type="number" min="0" step="0.01"></div>
+      </div>
+      <div class="field"><label>Fecha</label><input name="fecha" type="date"></div>
+    </div>
+    <div class="df"><button type="button" class="btn" data-close>Cancelar</button><button class="btn pri" id="gastoSave">Guardar gasto</button></div>
+  </form>
+</dialog>
+
+<!-- Producto: costo y materiales -->
+<dialog id="dlgProducto" class="wide">
+  <form id="fProd" method="dialog">
+    <div class="dh"><h2 id="prodTitle">Nuevo producto</h2><button type="button" class="btn sm" data-close>✕</button></div>
+    <div class="db" style="background:#fff">
+      <div class="g2b">
+        <div class="field"><label>Producto *</label><input name="nombre" placeholder="Ej. Placa NFC de reseñas, Menú digital"></div>
+        <div class="field"><label>Precio de venta</label><input name="precio" type="number" step="0.01" min="0" placeholder="0"></div>
+      </div>
+      <label>Materiales que lleva (por pieza)</label>
+      <table class="prod"><thead><tr><th>Material</th><th style="width:110px">Cantidad</th><th style="text-align:right">Costo</th><th></th></tr></thead><tbody id="recRows"></tbody></table>
+      <button type="button" class="btn sm" id="recAdd" style="margin:8px 0 14px">+ Agregar material</button>
+      <div class="field"><label>Mano de obra u otros costos (por pieza)</label><input name="extra" type="number" step="0.01" min="0" value="0">
+        <div class="help">Lo que no es material: tu tiempo, diseño, envío, hosting… Para un servicio como un menú digital, pon aquí todo su costo.</div></div>
+      <p id="prodTot" class="hoy" style="margin:6px 0 0"></p>
+    </div>
+    <div class="df" style="justify-content:space-between"><button type="button" class="btn danger" id="prodDel">Borrar</button>
+      <div style="display:flex;gap:8px"><button type="button" class="btn" data-close>Cancelar</button><button class="btn pri" id="prodSave">Guardar</button></div></div>
+  </form>
+</dialog>
+
+<!-- Entrada de stock -->
+<dialog id="dlgEntrada">
+  <form id="fEntrada" method="dialog">
+    <div class="dh"><h2>Mover stock</h2><button type="button" class="btn sm" data-close>✕</button></div>
+    <div class="db" style="background:#fff">
+      <div class="seg" id="movTipo" style="margin-bottom:12px"><button type="button" data-t="entrada" class="on">Entrada</button><button type="button" data-t="salida">Salida</button><button type="button" data-t="conteo">Conteo</button></div>
+      <div class="field"><label>Material · ahora tienes <b id="movActual"></b></label><select name="insumo"></select></div>
+      <div class="g2b">
+        <div class="field"><label><span id="movCantLbl">Cuánto entró</span> (<span class="entUnidad">pza</span>)</label><input name="cantidad" type="number" step="any" min="0" required></div>
+        <div class="field" id="movCostoBox"><label>Costo por unidad</label><input name="costo" type="number" step="0.01" min="0"></div>
+      </div>
+      <div class="field"><label>Motivo (opcional)</label><input name="motivo"></div>
+      <label class="chk" id="movGastoBox"><input type="checkbox" name="gasto" checked> Registrar la compra como gasto en la Caja</label>
+      <p id="entTotal" style="margin:10px 0 0"></p>
+    </div>
+    <div class="df"><button type="button" class="btn" data-close>Cancelar</button><button class="btn pri" id="movOk">Guardar entrada</button></div>
+  </form>
+</dialog>
+
+<dialog id="dlgHist" class="wide">
+  <div class="dh"><h2 id="histTitle">Historial</h2><button class="btn sm" data-close>✕</button></div>
+  <div class="db" style="background:#fff" id="histBody"></div>
+  <div class="df"><button class="btn" data-close>Cerrar</button></div>
+</dialog>
+
+<!-- Proveedor -->
+<dialog id="dlgProv">
+  <form id="fProv" method="dialog">
+    <div class="dh"><h2 id="provTitle">Nuevo proveedor</h2><button type="button" class="btn sm" data-close>✕</button></div>
+    <div class="db" style="background:#fff">
+      <div class="g2b"><div class="field"><label>Nombre *</label><input name="nombre" placeholder="Ej. Papelería del Centro"></div><div class="field"><label>WhatsApp</label><input name="telefono"></div></div>
+      <div class="field"><label>Notas</label><input name="notas" placeholder="Ej. entrega a domicilio, pedido mínimo $500"></div>
+      <h3 style="margin:12px 0 6px">A cuánto te da cada material</h3>
+      <div id="provPrecios"></div>
+    </div>
+    <div class="df" style="justify-content:space-between"><button type="button" class="btn danger" id="provDel">Borrar</button>
+      <div style="display:flex;gap:8px"><button type="button" class="btn" data-close>Cancelar</button><button class="btn pri">Guardar</button></div></div>
+  </form>
+</dialog>
+
+<!-- Bienvenida -->
+<dialog id="dlgOnb" class="onb">
+  <form id="fOnb" method="dialog" onsubmit="return false">
+    <div class="onb-top"><div class="onb-logo">V</div><div id="onbDots"><i></i><i></i><i></i></div></div>
+    <div class="db" style="background:#fff">
+      <div data-paso="1">
+        <h2>Bienvenido a tu panel</h2>
+        <p class="muted">Aquí llevas tus QR, tus prospectos, tus ventas y tus cobros. Empecemos con tus datos, salen en tus cotizaciones, contratos y mensajes.</p>
+        <div class="g2b"><div class="field"><label>Tu nombre *</label><input name="tu_nombre" placeholder="Esteban"></div><div class="field"><label>Tu empresa</label><input name="empresa"></div></div>
+        <div class="g2b"><div class="field"><label>Tu WhatsApp</label><input name="telefono" inputmode="tel" placeholder="311 123 4567"></div><div class="field"><label>Ciudad, Estado</label><input name="ciudad"></div></div>
+      </div>
+      <div data-paso="2" hidden>
+        <h2>¿A dónde quieres llegar?</h2>
+        <p class="muted">Con esto el panel te dice cuánto te falta cada mes y cuánto tienes que vender por día.</p>
+        <div class="g3"><div><label>Negocios en total</label><input name="meta" type="number" min="1"></div><div><label>Negocios nuevos al mes</label><input name="meta_mes_negocios" type="number" min="0"></div><div><label>Ventas al mes ($)</label><input name="meta_mes_ventas" type="number" min="0"></div></div>
+      </div>
+      <div data-paso="3" hidden>
+        <h2>¿Qué vendes?</h2>
+        <p class="muted">Palomea lo que ofreces y ajusta el precio. Después lo cambias cuando quieras en Inventario.</p>
+        <div id="onbProd"></div>
+      </div>
+    </div>
+    <div class="df" style="justify-content:space-between"><button type="button" class="btn" id="onbBack">Atrás</button>
+      <div style="display:flex;gap:8px"><button type="button" class="btn" id="onbSkip">Ahora no</button><button type="button" class="btn pri" id="onbNext">Siguiente</button></div></div>
+  </form>
+</dialog>
+
+<!-- Pedir monto -->
+<dialog id="dlgPedir">
+  <form id="fPedir" method="dialog">
+    <div class="dh"><h2 id="pedTitle">Pago</h2><button type="button" class="btn sm" data-close>✕</button></div>
+    <div class="db" style="background:#fff">
+      <p id="pedText" style="margin:0 0 12px"></p>
+      <div class="g3"><div><label>Monto</label><input name="monto" type="number" min="0" step="0.01" required></div>
+        <div><label>Forma de pago</label><select name="metodo"><option>Transferencia</option><option>Efectivo</option><option>Tarjeta</option><option>Link de pago</option></select></div>
+        <div><label>Fecha</label><input name="fecha" type="date"></div></div>
+    </div>
+    <div class="df"><button type="button" class="btn" data-close>Cancelar</button><button class="btn pri" id="pedOk">Guardar</button></div>
+  </form>
+</dialog>
+
+<!-- WhatsApp -->
+<dialog id="dlgWa">
+  <div class="dh"><h2>Mandar WhatsApp</h2><button class="btn sm" data-close>✕</button></div>
+  <div class="db" style="background:#fff">
+    <p class="muted small" style="margin:0 0 8px" id="waTo"></p>
+    <div class="seg wa-tabs" id="waTabs"></div>
+    <textarea id="waText" rows="6" style="width:100%;margin-top:10px;padding:10px;border:1px solid #d1d5db;border-radius:8px;font:inherit"></textarea>
+    <div class="help">Puedes cambiar el texto antes de mandarlo. Las plantillas se editan en Meta y ajustes.</div>
+  </div>
+  <div class="df"><button class="btn" data-close>Cancelar</button><button class="btn pri" id="waGo" style="background:#16a34a;border-color:#16a34a">Abrir WhatsApp</button></div>
+</dialog>
+
+<!-- Ajustes -->
+<dialog id="dlgAj" class="wide">
+  <form id="fAj" method="dialog">
+    <div class="dh"><h2>Ajustes de Vortex</h2><button type="button" class="btn sm" data-close>✕</button></div>
+    <div class="db" style="background:#fff">
+      <div class="bd-grid">
+        <div>
+          <h3>Tu empresa (sale en cotizaciones y reportes)</h3>
+          <div class="g2b"><div class="field"><label>Nombre de la empresa</label><input name="empresa"></div><div class="field"><label>Tu nombre</label><input name="tu_nombre" placeholder="Para los mensajes"></div></div>
+          <div class="g2b"><div class="field"><label>Teléfono</label><input name="telefono"></div><div class="field"><label>Correo</label><input name="correo" type="email"></div></div>
+          <div class="g2b"><div class="field"><label>Ciudad, Estado (contratos)</label><input name="ciudad" placeholder="Puerto Vallarta, Jalisco"></div><div class="field"><label>Quién firma los contratos</label><input name="firma" placeholder="Ing. Esteban Ortiz Domínguez"></div></div>
+          <div class="g2b"><div class="field"><label>Moneda</label><select name="moneda"><option value="MXN">Pesos mexicanos (MXN)</option><option value="USD">Dólares (USD)</option></select></div>
+            <div class="field"><label>Idioma para tus clientes</label><select name="idioma"><option value="es">Español</option><option value="en">English (Estados Unidos)</option></select></div></div>
+          <div class="field"><label>Link de pago (Stripe o Mercado Pago)</label><input name="link_pago" placeholder="https://buy.stripe.com/..."><div class="help">Sale en recordatorios de cobro, recibos y el portal del cliente para que te paguen con tarjeta.</div></div>
+          <h3 style="margin-top:14px">Metas</h3>
+          <div class="g3"><div><label>Negocios en total</label><input name="meta" type="number" min="1"></div><div><label>Negocios nuevos al mes</label><input name="meta_mes_negocios" type="number" min="0"></div><div><label>Ventas al mes</label><input name="meta_mes_ventas" type="number" min="0" placeholder="$"></div></div>
+          <div class="field"><label>Servicios que ofreces (uno por renglón)</label><textarea name="servicios" rows="5"></textarea></div>
+          <div class="field"><label>Vendedores y su comisión (uno por renglón: nombre, %)</label><textarea name="vendedores" rows="3" placeholder="Luis, 10&#10;Ana, 12"></textarea></div>
+        </div>
+        <div>
+          <h3>Mensajes de WhatsApp</h3>
+          <p class="muted small" style="margin:-4px 0 8px">Usa {negocio}, {monto}, {servicios}, {servicio}, {dia}, {mes}, {escaneos}, {link}, {yo} y {empresa}. Se llenan solos.</p>
+          <div id="ajPlant"></div>
+        </div>
+      </div>
+    </div>
+    <div class="df"><button type="button" class="btn" data-close>Cancelar</button><button class="btn pri">Guardar</button></div>
+  </form>
+</dialog>
+
+<!-- Cotización -->
+<dialog id="dlgCot" class="wide">
+  <form id="fCot" method="dialog">
+    <div class="dh"><h2>Nueva cotización</h2><button type="button" class="btn sm" data-close>✕</button></div>
+    <div class="db" style="background:#fff">
+      <div class="g3"><div style="grid-column:span 2"><label>Negocio</label><select name="negocio"></select></div><div><label>Vendedor</label><select name="vendedor"></select></div></div>
+      <table class="prod cot"><thead><tr><th>Concepto</th><th style="width:90px">Cant.</th><th style="width:120px">Precio</th><th style="text-align:right">Importe</th><th></th></tr></thead><tbody id="cotRows"></tbody></table>
+      <button type="button" class="btn sm" id="cotAdd" style="margin:8px 0 12px">+ Agregar concepto</button>
+      <div class="g3"><div><label>Vigencia (días)</label><input name="vigencia" type="number" min="1"></div><div style="grid-column:span 2"><label>Notas (forma de pago, tiempos de entrega…)</label><input name="notas" placeholder="Ej. 50% de anticipo, entrega en 5 días"></div></div>
+      <p id="cotTot" class="hoy" style="margin:12px 0 0;font-size:16px"></p>
+    </div>
+    <div class="df"><button type="button" class="btn" data-close>Cancelar</button><button class="btn pri">Guardar y descargar PDF</button></div>
+  </form>
+</dialog>
+
+<!-- Contrato -->
+<dialog id="dlgCon" class="wide">
+  <form id="fCon" method="dialog">
+    <div class="dh"><h2>Contrato · <span id="conFolio"></span></h2><button type="button" class="btn sm" data-close>✕</button></div>
+    <div class="db" style="background:#fff">
+      <div class="g2b"><div class="field"><label>Tipo de contrato</label><select name="tipo"></select></div><div class="field"><label>Negocio (opcional)</label><select name="negocio"></select></div></div>
+      <div class="g2b"><div class="field"><label>Cliente con título *</label><input name="cliente" placeholder="Dra. Edith Yadira Montero Becerra"></div>
+        <div class="field"><label>Se dirige como</label><select name="genero"><option value="f">LA CLIENTE</option><option value="m">EL CLIENTE</option></select></div></div>
+      <div class="g3"><div><label>Ciudad del cliente</label><input name="ciudad"></div><div><label>Fecha de firma</label><input name="fecha" type="date" required></div><div id="conCantBox"><label>Cuántas placas</label><input name="cantidad" type="number" min="1" step="1"></div></div>
+      <div class="g3" style="margin-top:10px"><div><label>Total con IVA</label><input name="total" type="number" min="0" step="0.01" required></div><div><label>Anticipo a la firma</label><input name="anticipo" type="number" min="0" step="0.01"></div><div><label>Mensualidad (0 = sin)</label><input name="mensualidad" type="number" min="0" step="0.01"></div></div>
+      <p id="conCalc" class="hoy" style="margin:12px 0 0"></p>
+      <div class="field" style="margin-top:12px"><label>Al guardar</label><select name="que"><option value="word">Descargar el Word para imprimir</option><option value="wa">Mandarle el link para que firme en su celular</option></select></div>
+    </div>
+    <div class="df"><button type="button" class="btn" data-close>Cancelar</button><button class="btn pri">Guardar</button></div>
+  </form>
+</dialog>
+
+<!-- Cobro mensual -->
+<dialog id="dlgSus">
+  <form id="fSus" method="dialog">
+    <div class="dh"><h2 id="susTitle">Nuevo cobro mensual</h2><button type="button" class="btn sm" data-close>✕</button></div>
+    <div class="db" style="background:#fff">
+      <div class="field"><label>Cliente</label><select name="negocio"></select></div>
+      <div class="field"><label>Servicio *</label><input name="concepto" placeholder="Ej. Menú digital, Hosting de página web"></div>
+      <div class="g3"><div><label>Cobras al mes *</label><input name="monto" type="number" min="0" step="0.01"></div><div><label>Te cuesta al mes</label><input name="costo" type="number" min="0" step="0.01" value="0"></div><div><label>Día de cobro</label><input name="dia" type="number" min="1" max="28"></div></div>
+      <div class="g2b"><div class="field"><label>Renovación (dominio, hosting…)</label><input name="renovacion" type="date"></div><div class="field" style="align-self:end"><label class="chk"><input type="checkbox" name="activa"> Activo</label></div></div>
+      <div class="field"><label>Link de pago de este cliente (opcional)</label><input name="link_pago" placeholder="https://buy.stripe.com/... con el monto mensual"></div>
+      <div class="field"><label>Notas</label><input name="notas"></div>
+    </div>
+    <div class="df" style="justify-content:space-between"><button type="button" class="btn danger" id="susDel">Borrar</button>
+      <div style="display:flex;gap:8px"><button type="button" class="btn" data-close>Cancelar</button><button class="btn pri">Guardar</button></div></div>
+  </form>
+</dialog>
+
+<!-- Confirmar -->
+<dialog id="dlgConfirm">
+  <div class="db" style="background:#fff"><p id="cfMsg" style="margin:0"></p></div>
+  <div class="df"><button class="btn" id="cfNo">Cancelar</button><button class="btn pri" id="cfOk" style="background:#b91c1c;border-color:#b91c1c">Borrar</button></div>
+</dialog>
+
+<!-- Lote -->
+<dialog id="dlgLote">
+  <form id="fLote" method="dialog">
+    <div class="dh"><h2>Lote de QR en blanco</h2><button type="button" class="btn sm" data-close>✕</button></div>
+    <div class="db" style="background:#fff">
+      <p class="err" id="loteErr" hidden></p>
+      <p class="muted small" style="margin:0 0 14px">Crea varios QR sin liga para imprimirlos ya. Cuando vendas cada folleto, le asignas la liga del negocio desde el panel. Mientras no tenga liga, quien lo escanee ve una página de "Próximamente".</p>
+      <div class="g2b">
+        <div class="field"><label>¿Cuántos QR?</label><input name="cantidad" type="number" min="1" max="60" value="3" required></div>
+        <div class="field"><label>Nombre</label><input name="nombre" value="Folleto" placeholder="Folleto"></div>
+      </div>
+      <div class="help" style="margin:-6px 0 12px">Se numeran solos: Folleto 001, Folleto 002…</div>
+      <label class="chk"><input type="checkbox" name="imprimir" checked> Abrir la impresión al terminar (2 etiquetas por QR)</label>
+    </div>
+    <div class="df"><button type="button" class="btn" data-close>Cancelar</button><button class="btn pri" id="loteSave">Crear</button></div>
+  </form>
+</dialog>
+
+<!-- Detalle -->
+<dialog id="dlgDetail" class="wide">
+  <div class="dh"><h2 id="dTitle"></h2><button class="btn sm" data-close>✕</button></div>
+  <div class="db">
+    <div class="detail">
+      <div>
+        <div class="qrbox">
+          <div id="dQr"></div>
+          <div class="btns">
+            <button class="btn sm pri" id="dlPngLabel">Descargar PNG con nombre</button>
+            <button class="btn sm" id="dlPng">Descargar PNG</button>
+            <button class="btn sm" id="dlSvg">Descargar SVG (imprenta)</button>
+          </div>
+          <div class="kv">
+            <div><span>Link del QR</span><span class="link" id="dShort" style="color:var(--ink)"></span></div>
+            <div><span>Destino actual</span><a id="dDest" target="_blank" rel="noopener"></a></div>
+          </div>
+        </div>
+      </div>
+      <div id="dStats"></div>
+    </div>
+  </div>
+  <div class="df" style="justify-content:space-between;flex-wrap:wrap">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn danger" id="dDel">Eliminar</button>
+      <button class="btn" id="dToggle"></button>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" id="dPrint">Imprimir etiquetas</button>
+      <button class="btn" id="dShare">Copiar link de estadísticas para el cliente</button>
+      <button class="btn pri" id="dEdit">Editar</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Etiquetas para imprimir -->
+<dialog id="dlgLabels" class="wide">
+  <form id="fLabels" onsubmit="return false">
+    <div class="dh"><h2>Imprimir etiquetas · 10×15 cm en hoja A4</h2><button type="button" class="btn sm" data-close>✕</button></div>
+    <div class="db">
+      <div class="lgrid">
+        <div class="card">
+          <h3>1. ¿Cuántas de cada QR?</h3>
+          <div class="inline" style="margin-bottom:8px"><input id="lQ" placeholder="Buscar…" style="flex:1;padding:7px 10px;border:1px solid #d1d5db;border-radius:8px">
+            <button type="button" class="btn sm" id="lAll">Un par de todos</button><button type="button" class="btn sm" id="lNone">Ninguno</button></div>
+          <div id="lRows" class="lrows"></div>
+          <p class="small" id="lTotal" style="margin:10px 0 0;font-weight:600"></p>
+        </div>
+        <div class="card">
+          <h3>2. Diseño</h3>
+          <div class="seg" id="lTpl"><button type="button" data-tpl="blanco">Blanco</button><button type="button" data-tpl="negro">Negro</button><button type="button" data-tpl="imagen">Mi imagen</button></div>
+          <div id="lLogoBox" style="margin-top:8px">
+            <label class="btn sm" style="display:inline-block;cursor:pointer">Cambiar ícono (PNG)<input type="file" id="lLogo" accept="image/png,image/webp,image/svg+xml,image/jpeg" hidden></label>
+            <button type="button" class="btn sm" id="lLogoClear">Quitar</button>
+            <div class="help" id="lLogoName"></div>
+          </div>
+          <div id="lUpload" style="margin-top:8px">
+            <label class="btn sm" style="display:inline-block;cursor:pointer">Subir imagen (PNG o JPG)<input type="file" id="lDesign" accept="image/png,image/jpeg,image/webp" hidden></label>
+            <button type="button" class="btn sm" id="lDesignClear">Quitar</button>
+            <div class="help" id="lDesignName"></div>
+            <div class="help">Vertical de 10×15 cm. Para buena impresión: 1181 × 1772 px.</div>
+          </div>
+          <label style="margin-top:10px">Etiquetas por hoja A4</label>
+          <select name="layout" style="width:100%;padding:7px 8px;border:1px solid #d1d5db;border-radius:8px;background:#fff"><option value="3">3 (2 paradas + 1 acostada)</option><option value="2">2 (paradas)</option></select>
+          <h3 style="margin-top:14px">3. Dónde va el QR (en cm)</h3>
+          <div class="g3">
+            <div><label>Izquierda</label><input type="number" name="qrX" step="0.1" min="0" max="10"></div>
+            <div><label>Arriba</label><input type="number" name="qrY" step="0.1" min="0" max="15"></div>
+            <div><label>Tamaño</label><input type="number" name="qrSize" step="0.1" min="2" max="9"></div>
+          </div>
+          <label class="chk"><input type="checkbox" name="frame"> Fondo blanco detrás del QR</label>
+          <h3 style="margin-top:14px">4. Texto</h3>
+          <div class="g3">
+            <div style="grid-column:span 3"><select name="text"><option value="client">Nombre del negocio</option><option value="name">Nombre del QR</option><option value="none">Sin texto</option></select></div>
+            <div><label>Arriba (cm)</label><input type="number" name="textY" step="0.1" min="0" max="15"></div>
+            <div><label>Tamaño</label><input type="number" name="textSize" step="0.05" min="0.2" max="1.5"></div>
+            <div><label>Color</label><input type="color" name="textColor"></div>
+          </div>
+          <label class="chk"><input type="checkbox" name="marks"> Marcas de corte</label>
+          <label class="chk"><input type="checkbox" name="folio"> Imprimir el folio en la esquina (ej. Folleto 001)</label>
+          <button type="button" class="btn sm" id="lReset" style="margin-top:8px">Restablecer posiciones</button>
+        </div>
+        <div class="card">
+          <h3>Vista previa</h3>
+          <div id="lPreview" class="lpv"></div>
+          <div class="help">Así se ve la primera etiqueta. En el PDF salen a su tamaño real de 10×15 cm.</div>
+        </div>
+      </div>
+    </div>
+    <div class="df"><button type="button" class="btn" data-close>Cerrar</button><button type="button" class="btn pri" id="lMake">Descargar PDF</button></div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const { esc, api, fmtTs, fmtN, qrSVG, qrPNG, download, fileName, renderStats, renderOverview } = UI;
+let QRS = [], ORIGIN = location.origin, editing = null, current = null;
+const $ = (s) => document.querySelector(s);
+const shortUrl = (q) => ORIGIN + '/r/' + q.slug;
+const VIEWS = ['resumen', 'codigos', 'clientes', 'negocios', 'caja', 'inventario', 'cotizaciones', 'cobros'];
+
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); setTimeout(() => t.classList.remove('on'), 1800); }
+async function copy(text, msg) { try { await navigator.clipboard.writeText(text); toast(msg || 'Copiado'); } catch { toast(text); } }
+document.querySelectorAll('[data-close]').forEach((b) => b.onclick = () => b.closest('dialog').close());
+
+// ---- Navegación ----
+function route() {
+  const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'resumen';
+  document.querySelectorAll('[data-view]').forEach((s) => s.classList.toggle('on', s.dataset.view === v));
+  document.querySelectorAll('[data-nav]').forEach((a) => a.classList.toggle('on', a.dataset.nav === v));
+  if (v === 'resumen') loadOverview();
+  if (v === 'negocios') Biz.showNegocios();
+  if (v === 'caja') Biz.showCaja();
+  if (v === 'inventario') Inv.show();
+  if (v === 'cotizaciones') { Vx.showCotizaciones(); Biz.ensure().then(() => Contratos.show()); }
+  if (v === 'cobros') Vx.showCobros();
+}
+function go(v) { if (location.hash === '#' + v) route(); else location.hash = v; }
+window.addEventListener('hashchange', route);
+
+// ---- Datos ----
+async function load() {
+  const r = await api('/api/qrs');
+  QRS = r.qrs; ORIGIN = r.origin;
+  const clients = [...new Set(QRS.map((q) => q.client).filter(Boolean))].sort();
+  const fc = $('#fc'), sel = fc.value;
+  fc.innerHTML = '<option value="">Todos los clientes</option>' + clients.map((c) => `<option>${esc(c)}</option>`).join('');
+  fc.value = clients.includes(sel) ? sel : '';
+  $('#clientsDl').innerHTML = clients.map((c) => `<option value="${esc(c)}">`).join('');
+  $('#nQr').textContent = QRS.length || '';
+  $('#nCl').textContent = clients.length || '';
+  renderList(); renderClients();
+}
+async function loadOverview() {
+  try { renderOverview($('#ov'), await api('/api/overview')); }
+  catch (e) { $('#ov').innerHTML = `<div class="card empty">${esc(e.message)}</div>`; }
+}
+async function refreshAll() { await load(); if (location.hash.slice(1) === 'resumen' || !location.hash) await loadOverview(); }
+
+$('#ov').onclick = (e) => {
+  const o = e.target.closest('[data-open]'); if (o) return openDetail(+o.dataset.open);
+  const c = e.target.closest('[data-client]'); if (c) filterClient(c.dataset.client === 'Sin cliente' ? '' : c.dataset.client);
+};
+$('#refresh').onclick = () => refreshAll().then(() => toast('Actualizado'));
+
+// ---- Lista ----
+function renderList() {
+  const q = $('#q').value.trim().toLowerCase(), c = $('#fc').value, fl = $('#fl').value;
+  const rows = QRS.filter((x) => (!c || x.client === c) && (!fl || (fl === 'sin') === !x.destination) && (!q || [x.name, x.client, x.destination, x.slug].join(' ').toLowerCase().includes(q)));
+  const blanks = rows.filter((x) => !x.destination).length;
+  const tot = rows.reduce((a, x) => a + x.total, 0), wk = rows.reduce((a, x) => a + x.week, 0);
+  $('#summary').innerHTML = `<span><b>${rows.length}</b> códigos</span><span><b>${fmtN(tot)}</b> escaneos totales</span><span><b>${fmtN(wk)}</b> en los últimos 7 días</span>${blanks ? `<span><b>${blanks}</b> sin liga</span>` : ''}`;
+  if (!QRS.length) { $('#list').innerHTML = `<div class="card empty">Todavía no tienes códigos. Crea el primero con <b>+ Nuevo QR</b>.</div>`; return; }
+  if (!rows.length) { $('#list').innerHTML = `<div class="card empty">No hay resultados.</div>`; return; }
+  $('#list').innerHTML = `<table><thead><tr><th>QR</th><th class="hide-sm">Link</th><th class="hide-sm">Destino</th><th>Escaneos</th><th class="hide-sm">Estado</th><th></th></tr></thead><tbody>${
+    rows.map((x) => `<tr class="row" data-id="${x.id}">
+      <td><div class="name">${esc(x.name)}</div><div class="muted small">${esc(x.client || '')}</div></td>
+      <td class="hide-sm"><span class="link">/r/${esc(x.slug)}</span></td>
+      <td class="hide-sm">${x.destination ? `<div class="dest" title="${esc(x.destination)}">${esc(x.destination)}</div>` : `<button class="btn sm warnbtn" data-assign="${x.id}">Asignar liga</button>`}</td>
+      <td><div class="num">${fmtN(x.total)}</div><div class="muted small">${fmtN(x.week)} esta semana</div></td>
+      <td class="hide-sm"><span class="pill ${!x.active ? 'off' : !x.destination ? 'warn' : ''}">${!x.active ? 'En pausa' : !x.destination ? 'Sin liga' : 'Activo'}</span></td>
+      <td style="text-align:right"><button class="btn sm" data-copy="${x.id}">Copiar link</button></td>
+    </tr>`).join('')
+  }</tbody></table>`;
+}
+$('#q').oninput = renderList; $('#fc').onchange = renderList; $('#fl').onchange = renderList;
+$('#list').onclick = (e) => {
+  const as = e.target.closest('[data-assign]');
+  if (as) { e.stopPropagation(); openEdit(QRS.find((x) => x.id == as.dataset.assign)); setTimeout(() => $('#fEdit').destination.focus(), 50); return; }
+  const cp = e.target.closest('[data-copy]');
+  if (cp) { e.stopPropagation(); return copy(shortUrl(QRS.find((x) => x.id == cp.dataset.copy)), 'Link del QR copiado'); }
+  const tr = e.target.closest('tr.row'); if (tr) openDetail(+tr.dataset.id);
+};
+function filterClient(c) { $('#q').value = ''; $('#fc').value = c; renderList(); go('codigos'); }
+
+// ---- Clientes ----
+function renderClients() {
+  const map = {};
+  QRS.forEach((q) => {
+    const k = q.client || 'Sin cliente';
+    const m = (map[k] ||= { name: k, qrs: 0, active: 0, total: 0, week: 0 });
+    m.qrs++; m.active += q.active ? 1 : 0; m.total += q.total; m.week += q.week;
+  });
+  const list = Object.values(map).sort((a, b) => b.total - a.total);
+  $('#clients').innerHTML = list.length ? list.map((c) => `
+    <div class="card cl">
+      <h2>${esc(c.name)}</h2><div class="muted small">${c.qrs} código${c.qrs === 1 ? '' : 's'} · ${c.active} activo${c.active === 1 ? '' : 's'}</div>
+      <div class="nums"><div><b>${fmtN(c.total)}</b><span>Escaneos totales</span></div><div><b>${fmtN(c.week)}</b><span>Últimos 7 días</span></div></div>
+      <div class="acts"><button class="btn sm" data-cl="${esc(c.name)}">Ver códigos</button>${c.name !== 'Sin cliente' ? `<button class="btn sm" data-newfor="${esc(c.name)}">+ QR para este cliente</button>` : ''}</div>
+    </div>`).join('') : `<div class="card empty">Aún no hay clientes. Se crean solos al ponerle cliente a un QR.</div>`;
+}
+$('#clients').onclick = (e) => {
+  const v = e.target.closest('[data-cl]'); if (v) return filterClient(v.dataset.cl === 'Sin cliente' ? '' : v.dataset.cl);
+  const n = e.target.closest('[data-newfor]'); if (n) { openEdit(); $('#fEdit').client.value = n.dataset.newfor; }
+};
+
+// ---- Crear / editar ----
+function openEdit(qr) {
+  editing = qr || null;
+  const f = $('#fEdit'); f.reset(); $('#editErr').hidden = true; $('#placeId').value = '';
+  $('#editTitle').textContent = qr ? 'Editar QR' : 'Nuevo QR';
+  $('#slugField').hidden = !!qr;
+  if (qr) { f.name.value = qr.name; f.client.value = qr.client || ''; f.destination.value = qr.destination || ''; }
+  else if ($('#fc').value) f.client.value = $('#fc').value;
+  $('#dlgEdit').showModal();
+}
+$('#newBtn').onclick = () => openEdit();
+$('#mkReview').onclick = () => {
+  const id = $('#placeId').value.trim();
+  if (!id) return toast('Pega primero el Place ID');
+  $('#fEdit').destination.value = 'https://search.google.com/local/writereview?placeid=' + encodeURIComponent(id);
+};
+$('#fEdit').onsubmit = async (e) => {
+  e.preventDefault();
+  const f = e.target, btn = $('#saveBtn');
+  const body = { name: f.name.value, client: f.client.value, destination: f.destination.value };
+  if (!editing) body.slug = f.slug.value;
+  btn.disabled = true;
+  try {
+    const r = editing
+      ? await api('/api/qrs/' + editing.id, { method: 'PATCH', body })
+      : await api('/api/qrs', { method: 'POST', body });
+    $('#dlgEdit').close(); await refreshAll(); toast(editing ? 'Cambios guardados' : 'QR creado');
+    openDetail(r.qr.id);
+  } catch (err) { $('#editErr').textContent = err.message; $('#editErr').hidden = false; }
+  finally { btn.disabled = false; }
+};
+
+// ---- Detalle ----
+async function openDetail(id) {
+  const r = await api('/api/qrs/' + id + '/stats');
+  current = r.qr; ORIGIN = r.origin;
+  const url = shortUrl(current);
+  $('#dTitle').textContent = current.name + (current.client ? ' · ' + current.client : '');
+  $('#dQr').innerHTML = qrSVG(url);
+  $('#dShort').textContent = url;
+  if (current.destination) { $('#dDest').textContent = current.destination; $('#dDest').href = current.destination; $('#dDest').classList.remove('nolink'); }
+  else { $('#dDest').textContent = 'Sin liga todavía · asignar'; $('#dDest').href = '#'; $('#dDest').classList.add('nolink'); }
+  $('#dToggle').textContent = current.active ? 'Pausar' : 'Activar';
+  renderStats($('#dStats'), r.stats);
+  if (!$('#dlgDetail').open) $('#dlgDetail').showModal();
+}
+$('#dlPng').onclick = () => download(qrPNG(shortUrl(current)), fileName(current.name) + '.png');
+$('#dlPngLabel').onclick = () => download(qrPNG(shortUrl(current), current.name), fileName(current.name) + '-con-nombre.png');
+$('#dlSvg').onclick = () => download('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(qrSVG(shortUrl(current))), fileName(current.name) + '.svg');
+$('#printBtn').onclick = () => Labels.open();
+$('#dDest').onclick = (e) => { if (!current.destination) { e.preventDefault(); $('#dlgDetail').close(); openEdit(current); setTimeout(() => $('#fEdit').destination.focus(), 50); } };
+
+// ---- Lote de QR en blanco ----
+$('#loteBtn').onclick = () => { $('#fLote').reset(); $('#loteErr').hidden = true; $('#dlgLote').showModal(); };
+$('#fLote').onsubmit = async (e) => {
+  e.preventDefault();
+  const f = e.target, btn = $('#loteSave'); btn.disabled = true;
+  try {
+    const { ids } = await api('/api/qrs/lote', { method: 'POST', body: { cantidad: +f.cantidad.value, nombre: f.nombre.value } });
+    $('#dlgLote').close(); await refreshAll();
+    toast(`${ids.length} QR creados`);
+    if (f.imprimir.checked) Labels.open(ids); else go('codigos');
+  } catch (err) { $('#loteErr').textContent = err.message; $('#loteErr').hidden = false; }
+  finally { btn.disabled = false; }
+};
+$('#dPrint').onclick = () => { $('#dlgDetail').close(); Labels.open(current.id); };
+$('#dShare').onclick = () => copy(ORIGIN + '/s/' + current.share_token, 'Link de estadísticas copiado');
+$('#dEdit').onclick = () => { $('#dlgDetail').close(); openEdit(current); };
+$('#dToggle').onclick = async () => {
+  await api('/api/qrs/' + current.id, { method: 'PATCH', body: { active: !current.active } });
+  await refreshAll(); openDetail(current.id); toast(current.active ? 'QR en pausa' : 'QR activado');
+};
+$('#dDel').onclick = async () => {
+  if (!confirm(`¿Eliminar "${current.name}"? El QR impreso dejará de funcionar y se borran sus estadísticas.`)) return;
+  await api('/api/qrs/' + current.id, { method: 'DELETE' });
+  $('#dlgDetail').close(); await refreshAll(); toast('QR eliminado');
+};
+
+// ---- Sesión ----
+function startApp() {
+  $('#gate').hidden = true; $('#app').hidden = false;
+  load().then(route).catch((e) => { $('#list').innerHTML = `<div class="card empty">${esc(e.message)}</div>`; route(); });
+}
+$('#fLogin').onsubmit = async (e) => {
+  e.preventDefault();
+  const f = e.target, btn = $('#loginBtn'); btn.disabled = true; $('#loginErr').hidden = true;
+  const { error } = await SB.auth.signInWithPassword({ email: f.email.value.trim(), password: f.password.value });
+  btn.disabled = false;
+  if (error) { $('#loginErr').textContent = /invalid/i.test(error.message) ? 'Correo o contraseña incorrectos.' : error.message; $('#loginErr').hidden = false; return; }
+  startApp();
+};
+$('#logout').onclick = async (e) => { e.preventDefault(); await SB.auth.signOut(); location.reload(); };
+// arranca cuando ya cargaron todas las partes del panel (negocios, caja, inventario)
+const boot = () => SB.auth.getSession().then(({ data }) => { if (data.session) startApp(); else $('#gate').hidden = false; });
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+</script>
+<script src="/labels.js"></script>
+<script src="/inventario.js"></script>
+<script src="/compras.js"></script>
+<script src="/agenda.js"></script>
+<script src="/negocios.js"></script>
+<script src="/vortex.js"></script>
+<script src="/contrato-doc.js"></script>
+<script src="/contrato.js"></script>
+<script src="/pagos.js"></script>
+<script src="/inicio.js"></script>
+</body>
+</html>

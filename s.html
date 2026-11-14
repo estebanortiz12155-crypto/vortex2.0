@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Estadísticas del QR</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/config.js"></script>
+<script src="/ui.js"></script>
+<script src="/supa.js"></script>
+<style>
+  main{max-width:860px;margin:0 auto;padding:28px 16px 48px}
+  header h1{font-size:24px;margin:0}header p{margin:2px 0 20px}
+</style>
+</head>
+<body>
+<main>
+  <header><h1 id="t">Cargando…</h1><p class="muted" id="sub"></p></header>
+  <div id="stats"></div>
+</main>
+<script>
+(async () => {
+  const token = location.pathname.split('/')[2];
+  try {
+    const { qr, stats } = await UI.api('/api/public/' + token);
+    document.title = 'Estadísticas · ' + qr.name;
+    document.getElementById('t').textContent = qr.name;
+    document.getElementById('sub').textContent = (qr.client ? qr.client + ' · ' : '') + 'Actualizado ' + new Date().toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' });
+    UI.renderStats(document.getElementById('stats'), stats);
+  } catch (e) {
+    document.getElementById('t').textContent = 'No se encontraron estadísticas';
+  }
+})();
+</script>
+</body>
+</html>
